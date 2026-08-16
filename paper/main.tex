@@ -524,6 +524,30 @@ Table~\ref{tab:ablations} ablates the two choices most closely tied to the
 diffusion analogy, on the $2{\times}2{\times}2$ where the entire group can be
 swept---so differences of hundredths of a percent are exact counts of failed
 states, not sampling noise (though all variants are single training runs).
+Figure~\ref{fig:schedules} makes the schedule semantics precise: in Gaussian
+diffusion the schedule shapes the signal-to-noise curve $\bar\alpha_t$; on
+the cube it shapes \emph{distance-shell coverage}, which we can measure
+exactly with the oracle. Every walk-based schedule under-covers the deep
+shells relative to their share of the group (at $\dstar{=}12$, which contains
+$36.8\%$ of all states, the uniform walk spends $11.8\%$ of its budget, the
+deep-biased walk $18.2\%$, and the shallow-biased walk only $6.7\%$---while
+spending $24\%$ of its samples on trivial depth-1 states).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{fig_schedules.pdf}
+\caption{What ``noise schedule'' means in each world. \textbf{Left:} in
+Gaussian diffusion the linear and cosine~\citep{nichol2021} schedules shape
+the signal fraction $\bar\alpha_t$---a knob with no analogue on a group,
+where a move either happened or did not. \textbf{Right:} on the cube the
+schedule acts only through the induced training distribution over true
+distances, measured exactly here ($2{\times}10^6$ samples per schedule,
+oracle-labeled, $2{\times}2{\times}2$, $K{=}18$). Gray bars are the exact
+shell sizes of the group. All walk schedules under-cover deep shells; the
+shallow-biased schedule starves them, matching its last-place coverage in
+Table~\ref{tab:ablations}.}
+\label{fig:schedules}
+\end{figure}
 \textbf{Schedule.} Every schedule reaches ${\ge}99.96\%$ search-free: the
 objective is robust to schedule shape, as expected when the schedule matters
 only through the induced state marginal. The ordering of the residuals is

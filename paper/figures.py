@@ -100,7 +100,47 @@ def fig_error_structure():
     print("fig_error_structure.pdf")
 
 
+def fig_schedules():
+    """What 'schedule shape' means in each world: SNR curves in Gaussian
+    diffusion vs induced distance-shell coverage on the cube (exact, oracle)."""
+    import numpy as np
+    T = 1000
+    t = np.arange(T + 1)
+    abar_lin = np.concatenate([[1.0], np.cumprod(1 - np.linspace(1e-4, 0.02, T))])
+    s = 0.008
+    f = np.cos((t / T + s) / (1 + s) * np.pi / 2) ** 2
+    abar_cos = f / f[0]
+
+    m = json.load(open(os.path.join(ROOT, "schedule_marginals.json")))
+    ds = list(range(15))
+
+    fig, axes = plt.subplots(1, 2, figsize=(6.4, 2.3))
+    axes[0].plot(t / T, abar_lin, color=BLUE, lw=1.8, label="linear $\\beta_t$")
+    axes[0].plot(t / T, abar_cos, color=ORANGE, lw=1.8, label="cosine")
+    axes[0].set_xlabel("$t/T$")
+    axes[0].set_ylabel("$\\bar\\alpha_t$  (signal fraction)")
+    axes[0].set_title("Gaussian diffusion:\nschedule shapes SNR", fontsize=8.5)
+    axes[0].legend(frameon=False)
+    axes[0].grid(alpha=0.25, lw=0.5)
+
+    axes[1].bar(ds, [v * 100 for v in m["group_shells"]], color="#d8d6cf",
+                width=0.8, label="group shell size")
+    for name, col in (("shallow", "#e87ba4"), ("uniform", ORANGE),
+                      ("deep", "#4a3aa7")):
+        axes[1].plot(ds, [v * 100 for v in m[name]], "o-", ms=2.8, lw=1.4,
+                     color=col, label=f"{name} walk")
+    axes[1].set_xlabel("true distance $d^*(s)$")
+    axes[1].set_ylabel("share of training states (%)")
+    axes[1].set_title("Cube: schedule shapes\nshell coverage (exact)", fontsize=8.5)
+    axes[1].legend(frameon=False, fontsize=7)
+    axes[1].grid(alpha=0.25, lw=0.5, axis="y")
+    fig.tight_layout(w_pad=1.6)
+    fig.savefig(os.path.join(HERE, "fig_schedules.pdf"), bbox_inches="tight")
+    print("fig_schedules.pdf")
+
+
 if __name__ == "__main__":
     fig_training()
     fig_width_scan()
     fig_error_structure()
+    fig_schedules()
