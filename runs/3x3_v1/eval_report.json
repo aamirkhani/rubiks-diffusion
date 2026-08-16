@@ -1,0 +1,12 @@
+{
+  "ckpt": "runs/3x3_v1/ckpt_latest.pt",
+  "iter": 250000,
+  "n_cubes": 1000,
+  "scramble_depth": 100,
+  "beam_width": 2048,
+  "greedy_solved": 0,
+  "beam_solved": 1000,
+  "solve_rate": 1.0,
+  "avg_solution_len": 22.95,
+  "max_solution_len": 28
+}

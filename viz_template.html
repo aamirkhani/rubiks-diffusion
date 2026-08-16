@@ -1,0 +1,494 @@
+<title>Rubik's RL Lab — GPU cube solver</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --grid: #e1e0d9; --axisln: #c3c2b7;
+    --ring: rgba(11,11,11,0.10); --accent: #009b48; --accent-ink: #00722f;
+    --chip: #f0efec; --loss: #2a78d6;
+    --c-U: #f6f6f4; --c-R: #c41e3a; --c-F: #009b48; --c-D: #ffd500; --c-L: #ff5800; --c-B: #0046ad;
+    --sticker-edge: #14130f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --grid: #2c2c2a; --axisln: #383835;
+      --ring: rgba(255,255,255,0.10); --accent: #00b854; --accent-ink: #35d97e;
+      --chip: #262624; --loss: #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axisln: #383835;
+    --ring: rgba(255,255,255,0.10); --accent: #00b854; --accent-ink: #35d97e;
+    --chip: #262624; --loss: #3987e5;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --grid: #e1e0d9; --axisln: #c3c2b7;
+    --ring: rgba(11,11,11,0.10); --accent: #009b48; --accent-ink: #00722f;
+    --chip: #f0efec; --loss: #2a78d6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 28px 20px 64px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; margin-bottom: 6px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  h1 .dot { color: var(--accent-ink); }
+  .sub { color: var(--ink-2); font-size: 14px; }
+  .statrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 26px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 6px;
+    padding: 7px 12px; font-size: 13px; color: var(--ink-2);
+  }
+  .stat b { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--muted); margin: 34px 0 12px; font-weight: 600; }
+  .card { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 16px; }
+
+  .tabs { display: inline-flex; gap: 4px; background: var(--chip); border-radius: 6px; padding: 3px; }
+  .tabs button {
+    border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 13px;
+    padding: 4px 14px; border-radius: 4px; cursor: pointer;
+  }
+  .tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+  .tabs button:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .stage { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 780px) { .stage { grid-template-columns: 1fr; } }
+  #cube3d { width: 100%; aspect-ratio: 1; display: block; cursor: grab; touch-action: none; }
+  #net { width: 100%; display: block; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+  .btn {
+    border: 1px solid var(--ring); background: var(--chip); color: var(--ink);
+    font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .spacer { flex: 1; }
+  .tape { margin-top: 12px; line-height: 2.1; }
+  .tape .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-right: 6px; }
+  .mv {
+    display: inline-block; min-width: 26px; text-align: center; padding: 1px 5px; margin: 0 2px;
+    border-radius: 4px; background: var(--chip); color: var(--ink-2); font-size: 13px;
+  }
+  .mv.scr { opacity: 0.65; }
+  .mv.done { background: var(--accent); color: #fff; }
+  .mv.cur { outline: 2px solid var(--accent); color: var(--ink); }
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 780px) { .charts { grid-template-columns: 1fr; } }
+  .chart-title { font-size: 13px; color: var(--ink-2); margin: 0 0 8px; font-weight: 600; }
+  canvas.chart { width: 100%; height: 240px; display: block; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10; background: var(--surface);
+    border: 1px solid var(--ring); border-radius: 6px; padding: 6px 9px; font-size: 12.5px;
+    color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,0.18); display: none;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) { .anim { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Rubik's RL Lab<span class="dot">.</span></h1>
+    <span class="sub">vectorized GPU cubes · DAVI value learning · replay-verified solves</span>
+  </header>
+  <div class="statrow" id="statrow"></div>
+
+  <h2>Solve playback</h2>
+  <div class="card">
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px">
+      <div class="tabs" id="cubeTabs"></div>
+      <div class="spacer"></div>
+      <button class="btn" id="prevTrace">‹ prev</button>
+      <span class="mono" id="traceLabel" style="font-size:13px; color:var(--ink-2)"></span>
+      <button class="btn" id="nextTrace">next ›</button>
+    </div>
+    <div class="stage">
+      <canvas id="cube3d" width="640" height="640" aria-label="3D cube view"></canvas>
+      <div>
+        <canvas id="net" width="520" height="400" aria-label="unfolded cube net"></canvas>
+        <div class="controls">
+          <button class="btn primary" id="play">▶ Play</button>
+          <button class="btn" id="stepB">‹ step</button>
+          <button class="btn" id="stepF">step ›</button>
+          <button class="btn" id="reset">↺ scramble</button>
+          <span class="spacer"></span>
+          <label style="font-size:13px; color:var(--ink-2)">speed
+            <input type="range" id="speed" min="0.3" max="3" step="0.1" value="1" style="vertical-align:middle">
+          </label>
+        </div>
+        <div class="tape" id="tape"></div>
+      </div>
+    </div>
+    <p class="note">Drag the cube to orbit. Solution moves were produced by the trained
+    value network (greedy descent / beam search) and verified by replaying them in the
+    environment.</p>
+  </div>
+
+  <h2>Training telemetry</h2>
+  <div class="charts">
+    <div class="card">
+      <p class="chart-title">DAVI training loss <span style="color:var(--muted); font-weight:400">(MSE, log scale)</span></p>
+      <canvas class="chart" id="lossChart"></canvas>
+    </div>
+    <div class="card">
+      <p class="chart-title">Greedy solve rate by scramble depth</p>
+      <canvas class="chart" id="probeChart"></canvas>
+    </div>
+  </div>
+
+  <h2>Validation</h2>
+  <div class="card" id="valCard"></div>
+</div>
+<div class="tooltip" id="tip"></div>
+
+<script>
+const DATA = __DATA_JSON__;
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const FACE_COLORS = () => ['--c-U','--c-R','--c-F','--c-D','--c-L','--c-B'].map(css);
+const FACES = "URFDLB";
+const AXES = {U:[0,1,0], R:[1,0,0], F:[0,0,1], D:[0,-1,0], L:[-1,0,0], B:[0,0,-1]};
+
+/* ---------- sticker geometry (mirrors cube_env.py) ---------- */
+function stickerGeom(n){
+  const pos=[], nrm=[];
+  for(let f=0; f<6; f++) for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+    let p,m;
+    switch(FACES[f]){
+      case 'U': p=[j+.5, n, i+.5];         m=[0,1,0];  break;
+      case 'R': p=[n, n-(i+.5), n-(j+.5)]; m=[1,0,0];  break;
+      case 'F': p=[j+.5, n-(i+.5), n];     m=[0,0,1];  break;
+      case 'D': p=[j+.5, 0, n-(i+.5)];     m=[0,-1,0]; break;
+      case 'L': p=[0, n-(i+.5), j+.5];     m=[-1,0,0]; break;
+      case 'B': p=[n-(j+.5), n-(i+.5), 0]; m=[0,0,-1]; break;
+    }
+    pos.push(p.map(c=>c-n/2)); nrm.push(m);
+  }
+  return {pos, nrm};
+}
+function cross(a,b){ return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+function rotAxis(p, a, t){         // Rodrigues
+  const c=Math.cos(t), s=Math.sin(t), d=p[0]*a[0]+p[1]*a[1]+p[2]*a[2];
+  const cr=cross(a,p);
+  return [ p[0]*c + cr[0]*s + a[0]*d*(1-c),
+           p[1]*c + cr[1]*s + a[1]*d*(1-c),
+           p[2]*c + cr[2]*s + a[2]*d*(1-c) ];
+}
+function quadFor(p, m, half){
+  let up = Math.abs(m[1]) > 0.9 ? [0,0,1] : [0,1,0];
+  let u = cross(m, up); const ul=Math.hypot(...u); u=u.map(c=>c/ul);
+  let v = cross(m, u);
+  return [ [p[0]+(u[0]+v[0])*half, p[1]+(u[1]+v[1])*half, p[2]+(u[2]+v[2])*half],
+           [p[0]+(u[0]-v[0])*half, p[1]+(u[1]-v[1])*half, p[2]+(u[2]-v[2])*half],
+           [p[0]-(u[0]+v[0])*half, p[1]-(u[1]+v[1])*half, p[2]-(u[2]+v[2])*half],
+           [p[0]-(u[0]-v[0])*half, p[1]-(u[1]-v[1])*half, p[2]-(u[2]-v[2])*half] ];
+}
+
+/* ---------- 3D renderer ---------- */
+const cube3d = {
+  cv: $('cube3d'), yaw: -0.62, pitch: -0.42, n: 2, geom: null,
+  state: null, anim: null,   // anim = {face, dir, t0, dur, from, to}
+  init(n){ this.n=n; this.geom=stickerGeom(n); },
+  draw(){
+    const cv=this.cv, ctx=cv.getContext('2d');
+    const dpr = window.devicePixelRatio||1;
+    const w = cv.clientWidth||640; if(cv.width !== w*dpr){ cv.width=w*dpr; cv.height=w*dpr; }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,w);
+    if(!this.state) return;
+    const cols = FACE_COLORS();
+    const n=this.n, S=6*n*n, half=0.44;
+    let angle=0, layerAxis=null, layerSet=null;
+    if(this.anim){
+      const a=this.anim, tt=Math.min((performance.now()-a.t0)/a.dur, 1);
+      const ease = tt<0.5 ? 2*tt*tt : 1-Math.pow(-2*tt+2,2)/2;
+      angle = a.dir * (Math.PI/2) * ease;
+      layerAxis = AXES[a.face];
+      layerSet = this.geom.pos.map(p => (p[0]*layerAxis[0]+p[1]*layerAxis[1]+p[2]*layerAxis[2]) > n/2-1 );
+    }
+    const cy=Math.cos(this.yaw), sy=Math.sin(this.yaw);
+    const cp=Math.cos(this.pitch), sp=Math.sin(this.pitch);
+    const view = p => {
+      let [x,y,z]=p;
+      let x1 =  x*cy + z*sy,  z1 = -x*sy + z*cy;
+      let y2 =  y*cp - z1*sp, z2 =  y*sp + z1*cp;
+      return [x1, y2, z2];
+    };
+    const f=7.5, scale = w/(2.6*n);
+    const proj = p => { const k=f/(f-p[2]); return [w/2 + p[0]*scale*k, w/2 - p[1]*scale*k, p[2]]; };
+    const polys=[];
+    for(let i=0;i<S;i++){
+      let p=this.geom.pos[i], m=this.geom.nrm[i];
+      if(layerSet && layerSet[i]){ p=rotAxis(p, layerAxis, angle); m=rotAxis(m, layerAxis, angle); }
+      const quad = quadFor(p, m, half*1.0).map(q=>proj(view(q)));
+      const zc = quad.reduce((s,q)=>s+q[2],0)/4;
+      polys.push({z: zc, quad, col: cols[this.state[i]]});
+    }
+    polys.sort((a,b)=>a.z-b.z);
+    ctx.lineJoin='round';
+    for(const P of polys){
+      ctx.beginPath();
+      P.quad.forEach((q,k)=> k? ctx.lineTo(q[0],q[1]) : ctx.moveTo(q[0],q[1]));
+      ctx.closePath();
+      ctx.fillStyle=P.col; ctx.fill();
+      ctx.strokeStyle=css('--sticker-edge'); ctx.lineWidth=1.6; ctx.stroke();
+    }
+    if(this.anim && performance.now()-this.anim.t0 >= this.anim.dur){
+      this.state = this.anim.to; this.anim=null;
+      player.onAnimEnd();
+    }
+    if(this.anim) requestAnimationFrame(()=>this.draw());
+  }
+};
+cube3d.cv.addEventListener('pointerdown', e=>{
+  cube3d.cv.setPointerCapture(e.pointerId);
+  let lx=e.clientX, ly=e.clientY;
+  const mv = ev=>{ cube3d.yaw += (ev.clientX-lx)*0.008; cube3d.pitch += (ev.clientY-ly)*0.008;
+    cube3d.pitch=Math.max(-1.4,Math.min(1.4,cube3d.pitch)); lx=ev.clientX; ly=ev.clientY; cube3d.draw(); };
+  const up = ()=>{ cube3d.cv.removeEventListener('pointermove',mv); cube3d.cv.removeEventListener('pointerup',up); };
+  cube3d.cv.addEventListener('pointermove',mv); cube3d.cv.addEventListener('pointerup',up);
+});
+
+/* ---------- 2D net ---------- */
+function drawNet(state, n){
+  const cv=$('net'), ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||520, h=w*3/4;
+  if(cv.width!==w*dpr){ cv.width=w*dpr; cv.height=h*dpr; }
+  cv.style.height=h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  if(!state) return;
+  const cols=FACE_COLORS();
+  const cell=Math.floor(Math.min(w/(4*n+1.5), h/(3*n+1.5)));
+  const originX=(w-4*n*cell)/2, originY=(h-3*n*cell)/2;
+  const place={U:[n,0], L:[0,n], F:[n,n], R:[2*n,n], B:[3*n,n], D:[n,2*n]};
+  for(let f=0; f<6; f++){
+    const [ox,oy]=place[FACES[f]];
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+      const c=state[f*n*n+i*n+j];
+      ctx.fillStyle=cols[c];
+      ctx.strokeStyle=css('--sticker-edge'); ctx.lineWidth=1.2;
+      const x=originX+(ox+j)*cell, y=originY+(oy+i)*cell;
+      ctx.beginPath(); ctx.roundRect(x+1,y+1,cell-2,cell-2,3); ctx.fill(); ctx.stroke();
+    }
+  }
+}
+
+/* ---------- playback ---------- */
+const player = {
+  tag:null, ti:0, step:0, playing:false, timer:null,
+  get traces(){ return (DATA.cubes[this.tag]||{}).traces||[]; },
+  get trace(){ return this.traces[this.ti]; },
+  load(tag, ti){
+    this.tag=tag; this.ti=(ti+this.traces.length)%this.traces.length||0; this.step=0; this.pause();
+    const tr=this.trace; if(!tr) return;
+    cube3d.init(tr.n); cube3d.state=tr.states[0].slice(); cube3d.anim=null;
+    this.refresh();
+  },
+  refresh(){
+    const tr=this.trace; if(!tr) return;
+    $('traceLabel').textContent = `cube ${this.ti+1}/${this.traces.length} · ${tr.solution.length} moves`;
+    drawNet(tr.states[this.step], tr.n);
+    cube3d.draw();
+    const tape=$('tape');
+    let html='<span class="lbl">scramble</span>';
+    html+=tr.scramble.map(m=>`<span class="mv mono scr">${m}</span>`).join('');
+    html+='<br><span class="lbl">solution</span>';
+    html+=tr.solution.map((m,k)=>{
+      const cls = k<this.step?'done':(k===this.step?'cur':'');
+      return `<span class="mv mono ${cls}">${m}</span>`;
+    }).join('');
+    tape.innerHTML=html;
+    $('play').textContent = this.playing ? '❚❚ Pause' : '▶ Play';
+    $('stepF').disabled = this.step>=tr.solution.length;
+    $('stepB').disabled = this.step<=0;
+  },
+  animate(dirForward){
+    const tr=this.trace;
+    const idx = dirForward? this.step : this.step-1;
+    if(idx<0 || idx>=tr.solution.length) return false;
+    const name = tr.solution[idx];
+    const face=name[0];
+    let dir = name.includes("'") ? +1 : -1;      // CW from outside = -90° about outward axis
+    if(!dirForward) dir=-dir;
+    const speed=parseFloat($('speed').value);
+    cube3d.state = tr.states[dirForward? idx : idx+1].slice();
+    const dur = 280/speed;
+    cube3d.anim = {face, dir, t0:performance.now(), dur,
+                   to: tr.states[dirForward? idx+1 : idx].slice()};
+    this.step += dirForward? 1 : -1;
+    cube3d.draw();
+    // rAF is throttled in background tabs; guarantee completion
+    setTimeout(()=>{ if(cube3d.anim) cube3d.draw(); }, dur+50);
+    return true;
+  },
+  onAnimEnd(){
+    this.refresh();
+    if(this.playing){
+      const speed=parseFloat($('speed').value);
+      if(this.step < this.trace.solution.length)
+        this.timer=setTimeout(()=>this.animate(true), 120/speed);
+      else { this.playing=false; this.refresh(); }
+    }
+  },
+  playPause(){
+    if(this.playing){ this.pause(); }
+    else {
+      if(this.step>=this.trace.solution.length){ this.step=0; cube3d.state=this.trace.states[0].slice(); }
+      this.playing=true; this.animate(true);
+    }
+    this.refresh();
+  },
+  pause(){ this.playing=false; clearTimeout(this.timer); }
+};
+$('play').onclick=()=>player.playPause();
+$('stepF').onclick=()=>{ player.pause(); player.animate(true); };
+$('stepB').onclick=()=>{ player.pause(); player.animate(false); };
+$('reset').onclick=()=>{ player.pause(); player.step=0; cube3d.state=player.trace.states[0].slice(); cube3d.anim=null; player.refresh(); };
+$('prevTrace').onclick=()=>player.load(player.tag, player.ti-1);
+$('nextTrace').onclick=()=>player.load(player.tag, player.ti+1);
+
+/* ---------- charts ---------- */
+function lineChart(cv, series, opts){
+  // series: [{pts:[[x,y],...], color, label}], opts: {logY, yPct}
+  const ctx=cv.getContext('2d'), dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width=w*dpr; cv.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=opts.labelR?46:12, padT=10, padB=22;
+  const all=series.flatMap(s=>s.pts.filter(p=>p[1]!=null));
+  if(!all.length) return;
+  const xs=all.map(p=>p[0]), ys=all.map(p=>opts.logY?Math.log10(Math.max(p[1],1e-4)):p[1]);
+  let x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  if(opts.yPct){ y0=0; y1=1; }
+  if(y1===y0) y1=y0+1;
+  const X=x=>padL+(x-x0)/(x1-x0)*(w-padL-padR);
+  const Y=y=>{ const v=opts.logY?Math.log10(Math.max(y,1e-4)):y; return padT+(1-(v-y0)/(y1-y0))*(h-padT-padB); };
+  // grid + ticks
+  ctx.strokeStyle=css('--grid'); ctx.fillStyle=css('--muted');
+  ctx.font='11px system-ui'; ctx.lineWidth=1;
+  const yticks = opts.yPct? [0,0.25,0.5,0.75,1] :
+    (opts.logY? [...Array(Math.ceil(y1)-Math.floor(y0)+1)].map((_,k)=>Math.pow(10,Math.floor(y0)+k)) : 4);
+  const tickVals = Array.isArray(yticks)? yticks : [];
+  for(const tv of tickVals){
+    const yy=Y(tv); if(yy<padT-1||yy>h-padB+1) continue;
+    ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(w-padR,yy); ctx.stroke();
+    ctx.textAlign='right';
+    ctx.fillText(opts.yPct? (tv*100)+'%' : tv.toExponential(0).replace('e','e'), padL-6, yy+4);
+  }
+  const xt = 4;
+  for(let k=0;k<=xt;k++){
+    const xv=x0+(x1-x0)*k/xt, xx=X(xv);
+    ctx.textAlign='center';
+    ctx.fillText(Math.round(xv/1000)+'k', xx, h-6);
+  }
+  ctx.strokeStyle=css('--axisln');
+  ctx.beginPath(); ctx.moveTo(padL,h-padB); ctx.lineTo(w-padR,h-padB); ctx.stroke();
+  // series
+  for(const s of series){
+    ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.beginPath();
+    let started=false;
+    for(const p of s.pts){ if(p[1]==null) continue;
+      const xx=X(p[0]), yy=Y(p[1]);
+      started? ctx.lineTo(xx,yy) : ctx.moveTo(xx,yy); started=true; }
+    ctx.stroke();
+    if(opts.labelR && s.label){
+      const last=[...s.pts].reverse().find(p=>p[1]!=null);
+      if(last){ ctx.fillStyle=css('--ink-2'); ctx.textAlign='left'; ctx.font='11.5px system-ui';
+        ctx.fillText(s.label, X(last[0])+6, Y(last[1])+4); }
+    }
+  }
+  // hover
+  cv.onmousemove = e=>{
+    const r=cv.getBoundingClientRect(), mx=e.clientX-r.left;
+    let best=null;
+    for(const s of series) for(const p of s.pts){ if(p[1]==null) continue;
+      const d=Math.abs(X(p[0])-mx); if(!best||d<best.d) best={d,p,s}; }
+    if(best && best.d<40){
+      const tip=$('tip'); tip.style.display='block';
+      tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
+      const v = opts.yPct? (best.p[1]*100).toFixed(1)+'%' : best.p[1].toPrecision(3);
+      tip.innerHTML=`iter ${best.p[0].toLocaleString()}<br>${best.s.label||'loss'}: <b>${v}</b>`;
+    } else $('tip').style.display='none';
+  };
+  cv.onmouseleave=()=>$('tip').style.display='none';
+}
+
+const RAMP=['#86b6ef','#5598e7','#3987e5','#256abf','#1c5cab','#184f95','#104281'];
+function renderCharts(tag){
+  const m=(DATA.cubes[tag]||{}).metrics;
+  if(!m){ return; }
+  lineChart($('lossChart'), [{pts:m.loss, color:css('--loss'), label:'loss'}], {logY:true});
+  const depths=Object.keys(m.probe);
+  const series=depths.map((d,k)=>({ pts:m.probe[d], label:'depth '+d,
+    color: RAMP[Math.min(Math.round(k*(RAMP.length-1)/Math.max(depths.length-1,1)), RAMP.length-1)] }));
+  lineChart($('probeChart'), series, {yPct:true, labelR:true});
+}
+
+/* ---------- validation table + stats ---------- */
+function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function renderValidation(){
+  const rows=[];
+  for(const tag of Object.keys(DATA.cubes)){
+    const r=DATA.cubes[tag].report; if(!r) continue;
+    if(tag==='2x2'){
+      const g=r.greedy||{};
+      rows.push(`<tr><td class="mono">2×2</td>
+        <td>${esc(g.scope||'')}</td>
+        <td class="num">${(r.combined_rate*100).toFixed(4)}%</td>
+        <td class="num">${g.avg_len??''}</td>
+        <td class="num">${g.avg_optimal??''} (optimal)</td>
+        <td class="num">${r.value_mae_overall??''}</td></tr>`);
+    } else {
+      rows.push(`<tr><td class="mono">3×3</td>
+        <td>${r.n_cubes} cubes, ${r.scramble_depth}-move scrambles, beam ${r.beam_width}</td>
+        <td class="num">${(r.solve_rate*100).toFixed(2)}%</td>
+        <td class="num">${r.avg_solution_len??''}</td>
+        <td class="num">max ${r.max_solution_len??''}</td>
+        <td class="num">—</td></tr>`);
+    }
+  }
+  $('valCard').innerHTML = rows.length ?
+    `<div style="overflow-x:auto"><table>
+      <tr><th>Cube</th><th>Scope</th><th class="num">Solve rate</th>
+      <th class="num">Avg length</th><th class="num">Reference</th><th class="num">Value MAE</th></tr>
+      ${rows.join('')}</table></div>
+     <p class="note">Every counted solve was replay-verified: the recorded move sequence was
+     re-applied to the scramble in the environment and required to land exactly on the solved state.</p>`
+    : '<p class="note">No validation reports embedded yet.</p>';
+
+  const meta=DATA.meta||{};
+  $('statrow').innerHTML = Object.entries(meta).map(([k,v])=>
+    `<span class="stat">${esc(k)} <b>${esc(v)}</b></span>`).join('');
+}
+
+/* ---------- tabs + boot ---------- */
+function setTab(tag){
+  document.querySelectorAll('#cubeTabs button').forEach(b=>b.classList.toggle('on', b.dataset.tag===tag));
+  player.load(tag, 0);
+  renderCharts(tag);
+}
+const tags=Object.keys(DATA.cubes);
+$('cubeTabs').innerHTML = tags.map(t=>`<button data-tag="${t}">${t.replace('x','×')}</button>`).join('');
+document.querySelectorAll('#cubeTabs button').forEach(b=> b.onclick=()=>setTab(b.dataset.tag));
+renderValidation();
+if(tags.length) setTab(tags[0]);
+window.addEventListener('resize', ()=>{ player.refresh(); renderCharts(player.tag); });
+new MutationObserver(()=>{ player.refresh(); renderCharts(player.tag); })
+  .observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+</script>

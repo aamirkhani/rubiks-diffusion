@@ -1,0 +1,66 @@
+{
+  "ckpt": "runs/2x2_v1/ckpt_latest.pt",
+  "iter": 40000,
+  "value_mae_overall": 0.9224,
+  "value_mae_by_depth": {
+    "3": 0.016,
+    "4": 0.026,
+    "5": 0.018,
+    "6": 0.03,
+    "7": 0.067,
+    "8": 0.416,
+    "9": 0.903,
+    "10": 0.55,
+    "11": 0.733,
+    "12": 1.622,
+    "13": 2.665,
+    "14": 4.081
+  },
+  "greedy": {
+    "scope": "ALL 3,674,160 states",
+    "solved": 2853667,
+    "total": 3674160,
+    "rate": 0.776686,
+    "avg_len": 15.045,
+    "avg_optimal": 10.523
+  },
+  "beam_fallback": {
+    "stages": [
+      {
+        "width": 32,
+        "attempted": 820493,
+        "solved": 793386,
+        "secs": 567.9
+      },
+      {
+        "width": 256,
+        "attempted": 27107,
+        "solved": 26170,
+        "secs": 144.0
+      },
+      {
+        "width": 2048,
+        "attempted": 937,
+        "solved": 917,
+        "secs": 35.0
+      },
+      {
+        "width": 8192,
+        "attempted": 20,
+        "solved": 19,
+        "secs": 3.1
+      },
+      {
+        "width": 32768,
+        "attempted": 1,
+        "solved": 1
+      }
+    ],
+    "unsolved": 0,
+    "avg_beam_len": 11.19
+  },
+  "unsolved_true_depth_hist": {
+    "12": 1
+  },
+  "combined_rate": 1.0
+}

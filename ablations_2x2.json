@@ -1,0 +1,37 @@
+{
+  "uniform_K18": {
+    "greedy_all_states": 0.999891,
+    "move_quality": 0.8074,
+    "K": 18,
+    "schedule": "uniform",
+    "t_conditioned": false
+  },
+  "uniform_K14": {
+    "greedy_all_states": 0.999865,
+    "move_quality": 0.8244,
+    "K": 14,
+    "schedule": "uniform",
+    "t_conditioned": false
+  },
+  "shallow_K18": {
+    "greedy_all_states": 0.999622,
+    "move_quality": 0.7927,
+    "K": 18,
+    "schedule": "shallow",
+    "t_conditioned": false
+  },
+  "deep_K18": {
+    "greedy_all_states": 0.999935,
+    "move_quality": 0.8164,
+    "K": 18,
+    "schedule": "deep",
+    "t_conditioned": false
+  },
+  "tcond_K18": {
+    "greedy_all_states": 0.999971,
+    "move_quality": 0.7705,
+    "K": 18,
+    "schedule": "uniform",
+    "t_conditioned": true
+  }
+}

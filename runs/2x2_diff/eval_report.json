@@ -1,0 +1,42 @@
+{
+  "ckpt": "runs/2x2_diff/ckpt_latest.pt",
+  "iter": 40000,
+  "method": "diffusion-style (inverse-move prediction)",
+  "argmax_move_reduces_distance": {
+    "overall": 0.8074,
+    "by_depth": {
+      "3": 1.0,
+      "4": 1.0,
+      "5": 1.0,
+      "6": 1.0,
+      "7": 0.9989,
+      "8": 0.9723,
+      "9": 0.8442,
+      "10": 0.7062,
+      "11": 0.7472,
+      "12": 0.9555,
+      "13": 0.9988,
+      "14": 1.0
+    }
+  },
+  "greedy": {
+    "solved": 3673758,
+    "total": 3674160,
+    "rate": 0.999891,
+    "avg_len": 11.592,
+    "avg_optimal": 10.666
+  },
+  "beam_fallback": {
+    "stages": [
+      {
+        "width": 32,
+        "attempted": 402,
+        "solved": 402,
+        "secs": 0.1
+      }
+    ],
+    "unsolved": 0,
+    "avg_beam_len": 11.27
+  },
+  "combined_rate": 1.0
+}

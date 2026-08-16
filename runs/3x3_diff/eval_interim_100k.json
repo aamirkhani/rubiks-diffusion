@@ -1,0 +1,13 @@
+{
+  "ckpt": "runs/3x3_diff/ckpt_latest.pt",
+  "iter": 100000,
+  "method": "diffusion-style (inverse-move prediction)",
+  "n_cubes": 100,
+  "scramble_depth": 100,
+  "beam_width": 512,
+  "greedy_solved": 21,
+  "beam_solved": 74,
+  "solve_rate": 0.95,
+  "avg_solution_len": 29.6,
+  "max_solution_len": 60
+}
