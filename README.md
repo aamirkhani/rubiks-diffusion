@@ -2,7 +2,7 @@
 
 Companion code for the paper *"Scramble Inversion as Discrete Denoising
 Diffusion: A Matched-Compute Study on the Rubik's Cube Group"*
-([`paper/main.pdf`](paper/main.pdf)).
+([`paper/scramble-inversion-diffusion.pdf`](paper/scramble-inversion-diffusion.pdf)).
 
 Two learned solvers trained and compared under matched compute on one RTX 5080
 Laptop GPU, with exhaustive exact-oracle validation:
