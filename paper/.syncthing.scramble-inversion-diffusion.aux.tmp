@@ -1,0 +1,103 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{agostinelli2019}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Cube solving as denoising diffusion, end to end (real states, trained model). \textbf  {Left (gray):} the forward process noises the solved state with random generator moves. \textbf  {Right (orange):} the learned reverse process---greedy rollout of the trained denoiser, no search---removes the noise move by move; the 24-move solution shown is replay-verified.}}{1}{figure.1}\protected@file@percent }
+\newlabel{fig:teaser}{{1}{1}{Cube solving as denoising diffusion, end to end (real states, trained model). \textbf {Left (gray):} the forward process noises the solved state with random generator moves. \textbf {Right (orange):} the learned reverse process---greedy rollout of the trained denoiser, no search---removes the noise move by move; the 24-move solution shown is replay-verified}{figure.1}{}}
+\citation{sohldickstein2015,ho2020}
+\citation{takano2023}
+\citation{takano2023}
+\citation{agostinelli2019}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\citation{mcaleer2019}
+\citation{agostinelli2019}
+\citation{korf1997}
+\citation{rokicki2014}
+\citation{takano2023}
+\citation{takano2023}
+\citation{sohldickstein2015,ho2020,song2019}
+\citation{austin2021,hoogeboom2021}
+\citation{nichol2021}
+\citation{sun2023}
+\citation{nichol2021}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Learned Rubik's Cube solvers.}{3}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Denoising diffusion.}{3}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{3}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{3}{Method}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Setup: the cube as a Cayley graph}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Forward process: scrambling as noise}{3}{subsection.3.2}\protected@file@percent }
+\newlabel{eq:forward}{{1}{3}{Forward process: scrambling as noise}{equation.1}{}}
+\citation{sohldickstein2015}
+\citation{ho2020}
+\citation{sohldickstein2015}
+\citation{ho2020}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces One forward process, three state spaces, at matched noise levels (left to right). \textbf  {Top:} particle diffusion of a 2-D spiral density into an isotropic Gaussian---the setting in which diffusion models were introduced~\citep  {sohldickstein2015} (our rendering). \textbf  {Middle:} Gaussian image diffusion under the linear DDPM schedule~\citep  {ho2020}, applied to a standard public-domain test photograph (pixel-space noising, unrelated to the cube). \textbf  {Bottom:} the group forward process of this paper---the identical cube after $t$ uniformly random generator moves (actual engine states). In all three, a linear schedule interpolates between the data distribution and the fully-noised regime; on the cube the ``noise'' is exogenous group action and the fully-noised regime is a uniformly random state.}}{4}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:forward}{{2}{4}{One forward process, three state spaces, at matched noise levels (left to right). \textbf {Top:} particle diffusion of a 2-D spiral density into an isotropic Gaussian---the setting in which diffusion models were introduced~\citep {sohldickstein2015} (our rendering). \textbf {Middle:} Gaussian image diffusion under the linear DDPM schedule~\citep {ho2020}, applied to a standard public-domain test photograph (pixel-space noising, unrelated to the cube). \textbf {Bottom:} the group forward process of this paper---the identical cube after $t$ uniformly random generator moves (actual engine states). In all three, a linear schedule interpolates between the data distribution and the fully-noised regime; on the cube the ``noise'' is exogenous group action and the fully-noised regime is a uniformly random state}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Reverse process: noise prediction and sampling}{4}{subsection.3.3}\protected@file@percent }
+\newlabel{eq:loss}{{2}{4}{Reverse process: noise prediction and sampling}{equation.2}{}}
+\newlabel{eq:posterior}{{3}{4}{Reverse process: noise prediction and sampling}{equation.3}{}}
+\citation{sohldickstein2015}
+\citation{sohldickstein2015}
+\citation{agostinelli2019}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Reverse processes reconstruct the data from noise. \textbf  {Top:} a small DDPM trained here on the spiral density (the classic reconstruction demonstration of the original diffusion paper~\citep  {sohldickstein2015}) walks 1{,}600 particles from $\mathcal  {N}(0,I)$ back onto the spiral. \textbf  {Bottom:} the trained cube denoiser's \emph  {actual} greedy rollout (no search) on a 100-move scramble: each panel shows the chosen move and its probability under $p_\theta $; the 26-move solution is replay-verified. Confidence rises as noise is removed, in both domains.}}{5}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:reverse}{{3}{5}{Reverse processes reconstruct the data from noise. \textbf {Top:} a small DDPM trained here on the spiral density (the classic reconstruction demonstration of the original diffusion paper~\citep {sohldickstein2015}) walks 1{,}600 particles from $\mathcal {N}(0,I)$ back onto the spiral. \textbf {Bottom:} the trained cube denoiser's \emph {actual} greedy rollout (no search) on a 100-move scramble: each panel shows the chosen move and its probability under $p_\theta $; the 26-move solution is replay-verified. Confidence rises as noise is removed, in both domains}{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Baseline: deep approximate value iteration}{5}{subsection.3.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces The shared architecture, shown on a \emph  {real} forward pass through both trained $3{\times }3{\times }3$ networks. A state eight scramble moves from solved (left, actual engine state) is one-hot encoded and passed through the common residual-MLP backbone. The trained denoiser head (top right, actual output distribution) places nearly all probability on the true inverse of the last scramble move; the trained DAVI head (bottom right) reads $V_\theta (s)=8.31$ for this 8-move scramble. The two objectives share every parameter except the final linear layer.}}{6}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:arch}{{4}{6}{The shared architecture, shown on a \emph {real} forward pass through both trained $3{\times }3{\times }3$ networks. A state eight scramble moves from solved (left, actual engine state) is one-hot encoded and passed through the common residual-MLP backbone. The trained denoiser head (top right, actual output distribution) places nearly all probability on the true inverse of the last scramble move; the trained DAVI head (bottom right) reads $V_\theta (s)=8.31$ for this 8-move scramble. The two objectives share every parameter except the final linear layer}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Setup}{6}{section.4}\protected@file@percent }
+\newlabel{sec:setup}{{4}{6}{Experimental Setup}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Vectorized environment.}{6}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Engine and oracle validation.}{6}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Verification protocol.}{6}{section*.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Exhaustive evaluation over the entire $2{\times }2{\times }2$ group (URF generators). Every solution replay-verified. DAVI's value-guided and the denoiser's likelihood-guided beams use their respective native scoring.}}{7}{table.caption.10}\protected@file@percent }
+\newlabel{tab:2x2}{{1}{7}{Exhaustive evaluation over the entire $2{\times }2{\times }2$ group (URF generators). Every solution replay-verified. DAVI's value-guided and the denoiser's likelihood-guided beams use their respective native scoring}{table.caption.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Protocol.}{7}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{7}{section.5}\protected@file@percent }
+\newlabel{sec:results}{{5}{7}{Results}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}The full $2{\times }2{\times }2$ group, exhaustively}{7}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Exact error structure.}{7}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}$3{\times }3{\times }3$: matched compute, full scrambles}{7}{subsection.5.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Exact-oracle error structure on the $2{\times }2{\times }2$ (100k uniform states). \textbf  {Left:} probability that the denoiser's argmax move strictly reduces true distance, by $d^{*}$. \textbf  {Right:} DAVI value MAE by $d^{*}$. The two objectives fail in complementary, mechanistically interpretable ways.}}{8}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:errors}{{5}{8}{Exact-oracle error structure on the $2{\times }2{\times }2$ (100k uniform states). \textbf {Left:} probability that the denoiser's argmax move strictly reduces true distance, by $\dstar $. \textbf {Right:} DAVI value MAE by $\dstar $. The two objectives fail in complementary, mechanistically interpretable ways}{figure.caption.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces $3{\times }3{\times }3$ on 1000 hundred-move scrambles, all solutions replay-verified. Each method uses its native beam scoring (value vs.\ cumulative log-likelihood); see Figure~\ref {fig:width} for the implementation-matched comparison.}}{8}{table.caption.13}\protected@file@percent }
+\newlabel{tab:3x3}{{2}{8}{$3{\times }3{\times }3$ on 1000 hundred-move scrambles, all solutions replay-verified. Each method uses its native beam scoring (value vs.\^^Mcumulative log-likelihood); see Figure~\ref {fig:width} for the implementation-matched comparison}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Test-time compute scaling}{8}{subsection.5.3}\protected@file@percent }
+\citation{nichol2021}
+\citation{nichol2021}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Greedy (search-free) solve rate versus training wall clock on the $3{\times }3{\times }3$, by scramble depth (512 cubes per probe). The denoising objective converts GPU-hours into search-free capability several times faster than value iteration, and is the only method that lifts off at depth 30 within either budget.}}{9}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:training}{{6}{9}{Greedy (search-free) solve rate versus training wall clock on the $3{\times }3{\times }3$, by scramble depth (512 cubes per probe). The denoising objective converts GPU-hours into search-free capability several times faster than value iteration, and is the only method that lifts off at depth 30 within either budget}{figure.caption.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Test-time compute scaling on the $3{\times }3{\times }3$ (200 hundred-move scrambles; identical batched no-dedup beam for both methods). \textbf  {Left:} solve rate vs.\ beam width. \textbf  {Right:} wall clock (log scale). The denoiser dominates at every width and is ${\sim }20\times $ faster at equal width because it scores candidates with the parent's forward pass rather than evaluating every child.}}{9}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:width}{{7}{9}{Test-time compute scaling on the $3{\times }3{\times }3$ (200 hundred-move scrambles; identical batched no-dedup beam for both methods). \textbf {Left:} solve rate vs.\ beam width. \textbf {Right:} wall clock (log scale). The denoiser dominates at every width and is ${\sim }20\times $ faster at equal width because it scores candidates with the parent's forward pass rather than evaluating every child}{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Ablations: schedule and timestep conditioning}{9}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:ablations}{{5.4}{9}{Ablations: schedule and timestep conditioning}{subsection.5.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces What ``noise schedule'' means in each world. \textbf  {Left:} in Gaussian diffusion the linear and cosine~\citep  {nichol2021} schedules shape the signal fraction $\bar  \alpha _t$---a knob with no analogue on a group, where a move either happened or did not. \textbf  {Right:} on the cube the schedule acts only through the induced training distribution over true distances, measured exactly here ($2{\times }10^6$ samples per schedule, oracle-labeled, $2{\times }2{\times }2$, $K{=}18$). Gray bars are the exact shell sizes of the group. All walk schedules under-cover deep shells; the shallow-biased schedule starves them, matching its last-place coverage in Table~\ref {tab:ablations}.}}{10}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:schedules}{{8}{10}{What ``noise schedule'' means in each world. \textbf {Left:} in Gaussian diffusion the linear and cosine~\citep {nichol2021} schedules shape the signal fraction $\bar \alpha _t$---a knob with no analogue on a group, where a move either happened or did not. \textbf {Right:} on the cube the schedule acts only through the induced training distribution over true distances, measured exactly here ($2{\times }10^6$ samples per schedule, oracle-labeled, $2{\times }2{\times }2$, $K{=}18$). Gray bars are the exact shell sizes of the group. All walk schedules under-cover deep shells; the shallow-biased schedule starves them, matching its last-place coverage in Table~\ref {tab:ablations}}{figure.caption.16}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Noise-schedule and conditioning ablations on the $2{\times }2{\times }2$: greedy (search-free) solve rate over all $3{,}674{,}160$ states (with implied unsolved-state counts) and fraction of argmax moves that strictly reduce exact distance (100k uniform states; $t$-conditioned variant queried at $t{=}K$). 40k iterations each, single run per variant. Shallow/deep bias: $d = \lceil K u^2\rceil $ / $d = \lceil K \sqrt  {u}\rceil $, $u\sim \mathrm  {Unif}(0,1)$.}}{10}{table.caption.17}\protected@file@percent }
+\newlabel{tab:ablations}{{3}{10}{Noise-schedule and conditioning ablations on the $2{\times }2{\times }2$: greedy (search-free) solve rate over all $3{,}674{,}160$ states (with implied unsolved-state counts) and fraction of argmax moves that strictly reduce exact distance (100k uniform states; $t$-conditioned variant queried at $t{=}K$). 40k iterations each, single run per variant. Shallow/deep bias: $d = \lceil K u^2\rceil $ / $d = \lceil K \sqrt {u}\rceil $, $u\sim \mathrm {Unif}(0,1)$}{table.caption.17}{}}
+\bibstyle{plainnat}
+\bibcite{agostinelli2019}{{1}{2019}{{Agostinelli et~al.}}{{}}}
+\bibcite{austin2021}{{2}{2021}{{Austin et~al.}}{{}}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Why does the denoiser need so much less search?}{11}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion and Limitations}{11}{section.6}\protected@file@percent }
+\newlabel{sec:limitations}{{6}{11}{Discussion and Limitations}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Reproducibility}{11}{section.7}\protected@file@percent }
+\bibcite{ho2020}{{3}{2020}{{Ho et~al.}}{{}}}
+\bibcite{hoogeboom2021}{{4}{2021}{{Hoogeboom et~al.}}{{}}}
+\bibcite{korf1997}{{5}{1997}{{Korf}}{{}}}
+\bibcite{mcaleer2019}{{6}{2019}{{McAleer et~al.}}{{}}}
+\bibcite{nichol2021}{{7}{2021}{{Nichol and Dhariwal}}{{}}}
+\bibcite{rokicki2014}{{8}{2014}{{Rokicki et~al.}}{{}}}
+\bibcite{sohldickstein2015}{{9}{2015}{{Sohl-Dickstein et~al.}}{{}}}
+\bibcite{song2019}{{10}{2019}{{Song and Ermon}}{{}}}
+\bibcite{sun2023}{{11}{2023}{{Sun and Yang}}{{}}}
+\bibcite{takano2023}{{12}{2023}{{Takano}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Hyperparameters and matched settings}{12}{appendix.A}\protected@file@percent }
+\newlabel{app:hyper}{{A}{12}{Hyperparameters and matched settings}{appendix.A}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Training-distribution statistics}{12}{appendix.B}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Matched configurations. The two methods differ only in output head and training objective.}}{13}{table.caption.19}\protected@file@percent }
+\newlabel{tab:hyper}{{4}{13}{Matched configurations. The two methods differ only in output head and training objective}{table.caption.19}{}}
+\gdef \@abspage@last{13}
