@@ -405,23 +405,47 @@ def fig_teaser():
 
     fwd_idx = [0, 6, 14, 30]
     rev_idx = [int(round(x)) for x in np.linspace(0, L, 5)][1:]
-    panels = [fwd_states[i] for i in fwd_idx] + [rev_states[i] for i in rev_idx]
+    panels = ([("cube", fwd_states[i]) for i in fwd_idx] + [("model", None)] +
+              [("cube", rev_states[i]) for i in rev_idx])
     n_p = len(panels)
+    NET_K = len(fwd_idx)                      # index of the model glyph
 
-    fig, axes = plt.subplots(1, n_p, figsize=(7.0, 1.25))
-    for k, stt in enumerate(panels):
-        render_cube(axes[k], stt)
+    fig, axes = plt.subplots(1, n_p, figsize=(7.0, 1.3))
+    for k, (kind, stt) in enumerate(panels):
+        ax = axes[k]
+        if kind == "cube":
+            render_cube(ax, stt)
+        else:
+            # compact denoiser glyph: 324 -> backbone -> 12 logits
+            ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
+            cols = [(0.14, 6), (0.42, 8), (0.70, 8), (0.95, 4)]
+            ys = {x: np.linspace(0.5 - 0.052 * (nn - 1), 0.5 + 0.052 * (nn - 1), nn)
+                  for x, nn in cols}
+            for (x1, _), (x2, _) in zip(cols[:-1], cols[1:]):
+                for y1 in ys[x1]:
+                    for y2 in ys[x2]:
+                        ax.plot([x1, x2], [y1, y2], lw=0.25, color="#d9c9bd",
+                                zorder=1)
+            for j, (x, nn) in enumerate(cols):
+                last = j == len(cols) - 1
+                ax.scatter([x] * nn, ys[x], s=13 if last else 9,
+                           c=ORANGE if last else "#8a7a6d", zorder=2,
+                           linewidths=0)
+            ax.text(0.5, 0.055, "denoiser\n$p_\\theta(a\\,|\\,s)$", ha="center",
+                    va="bottom", fontsize=6.6, color=INK)
         if k < n_p - 1:
-            col = MUTED if k < len(fwd_idx) - 1 else ORANGE
-            axes[k].annotate("", xy=(1.32, 0.45), xytext=(1.02, 0.45),
-                             xycoords="axes fraction",
-                             arrowprops=dict(arrowstyle="-|>", lw=1.1, color=col))
+            col = MUTED if k < NET_K - 1 else ORANGE
+            ax.annotate("", xy=(1.30, 0.45), xytext=(1.02, 0.45),
+                        xycoords="axes fraction",
+                        arrowprops=dict(arrowstyle="-|>", lw=1.1, color=col))
     axes[0].set_title("solved $x_0$", fontsize=7.5, pad=2)
-    axes[len(fwd_idx) - 1].set_title("fully noised", fontsize=7.5, pad=2)
+    axes[NET_K - 1].set_title("fully noised", fontsize=7.5, pad=2)
+    axes[NET_K + 1].set_title(f"{env3.move_names[actions[0,0]]} "
+                              f"...", fontsize=7.5, pad=2)
     axes[-1].set_title(f"re-solved ({L} moves)", fontsize=7.5, pad=2)
-    fig.text(0.245, 0.045, "forward process: noise = random moves",
+    fig.text(0.21, 0.045, "forward process: noise = random moves",
              ha="center", fontsize=7.6, color=MUTED)
-    fig.text(0.72, 0.045, "reverse process: learned denoiser $p_\\theta(a\\,|\\,s)$, no search",
+    fig.text(0.76, 0.045, "reverse process: iterate the denoiser, no search",
              ha="center", fontsize=7.6, color=ORANGE)
     fig.tight_layout(w_pad=1.2, rect=(0, 0.06, 1, 1))
     fig.savefig(os.path.join(HERE, "fig_teaser.pdf"), bbox_inches="tight")
