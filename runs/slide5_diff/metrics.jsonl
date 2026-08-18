@@ -66,3 +66,15 @@
 {"iter": 6600, "loss": 0.9974, "ema": 0.9934, "ips": 9.46, "tgt_updates": 0}
 {"iter": 6700, "loss": 0.9934, "ema": 0.9926, "ips": 11.96, "tgt_updates": 0}
 {"iter": 6800, "loss": 0.9857, "ema": 0.9922, "ips": 9.37, "tgt_updates": 0}
+{"iter": 6900, "loss": 0.9948, "ema": 0.992, "ips": 12.06, "tgt_updates": 0}
+{"iter": 7000, "loss": 0.9981, "ema": 0.9924, "ips": 10.06, "tgt_updates": 0}
+{"iter": 7100, "loss": 0.9952, "ema": 0.9938, "ips": 14.13, "tgt_updates": 0}
+{"iter": 7200, "loss": 0.9816, "ema": 0.9903, "ips": 9.43, "tgt_updates": 0}
+{"iter": 7300, "loss": 0.9869, "ema": 0.991, "ips": 9.4, "tgt_updates": 0}
+{"iter": 7400, "loss": 1.0001, "ema": 0.9918, "ips": 12.2, "tgt_updates": 0}
+{"iter": 7500, "loss": 0.9912, "ema": 0.9918, "ips": 9.17, "tgt_updates": 0}
+{"iter": 7600, "loss": 0.993, "ema": 0.9912, "ips": 12.24, "tgt_updates": 0}
+{"iter": 7700, "loss": 0.9975, "ema": 0.9908, "ips": 9.3, "tgt_updates": 0}
+{"iter": 7800, "loss": 0.9901, "ema": 0.9914, "ips": 12.04, "tgt_updates": 0}
+{"iter": 7900, "loss": 0.99, "ema": 0.9904, "ips": 9.53, "tgt_updates": 0}
+{"iter": 8000, "loss": 1.002, "ema": 0.9908, "ips": 11.77, "tgt_updates": 0}
