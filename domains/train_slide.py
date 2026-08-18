@@ -125,7 +125,7 @@ def train(method, n, iters, out_dir, K, batch=10000, lr=1e-3, device="cuda",
     net.train()
 
     # scramble pool: amortize the K-step walk over POOL training iterations
-    POOL = 32
+    POOL = 64
     pool_states, pool_labels, pool_ptr = None, None, 0
 
     def refill_pool():
