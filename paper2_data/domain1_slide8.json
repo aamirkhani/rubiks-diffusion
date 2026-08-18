@@ -1,0 +1,23 @@
+{
+  "domain": "8-puzzle (slide 3x3)",
+  "states": 181440,
+  "diameter": 31,
+  "denoise": {
+    "greedy_all_states": 1.0,
+    "solved": 181440,
+    "total": 181440,
+    "avg_len": 22.96,
+    "avg_optimal": 21.97,
+    "sweep_secs": 3.2,
+    "move_quality": 0.8867
+  },
+  "davi": {
+    "greedy_all_states": 1.0,
+    "solved": 181440,
+    "total": 181440,
+    "avg_len": 21.99,
+    "avg_optimal": 21.97,
+    "sweep_secs": 9.1,
+    "move_quality": 0.9947
+  }
+}
