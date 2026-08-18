@@ -1,0 +1,8 @@
+{"iter": 100, "loss": 1.3557, "ema": 1.3924, "ips": 4.61, "tgt_updates": 0}
+{"iter": 200, "loss": 1.1638, "ema": 1.1855, "ips": 8.67, "tgt_updates": 0}
+{"iter": 300, "loss": 1.082, "ema": 1.0964, "ips": 8.56, "tgt_updates": 0}
+{"iter": 400, "loss": 1.0486, "ema": 1.0584, "ips": 8.64, "tgt_updates": 0}
+{"iter": 500, "loss": 1.0369, "ema": 1.0416, "ips": 8.65, "tgt_updates": 0}
+{"iter": 600, "loss": 1.0317, "ema": 1.035, "ips": 8.51, "tgt_updates": 0}
+{"iter": 700, "loss": 1.0226, "ema": 1.0279, "ips": 8.55, "tgt_updates": 0}
+{"iter": 800, "loss": 1.0394, "ema": 1.0304, "ips": 8.65, "tgt_updates": 0}
