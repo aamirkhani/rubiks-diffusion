@@ -1,0 +1,16 @@
+{
+  "domain": "24-puzzle (slide 5x5)",
+  "state_space": "25!/2 ~ 7.7e24",
+  "denoise": {
+    "iter": 62000,
+    "n": 500,
+    "scramble": 1000,
+    "greedy_rate": 0.998,
+    "greedy_avg_len": 139.6,
+    "greedy_secs": 2.8,
+    "beam_width": 128,
+    "beam_extra_solved": 1,
+    "beam_secs": 0.9,
+    "total_rate": 1.0
+  }
+}
