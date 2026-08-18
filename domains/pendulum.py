@@ -88,6 +88,17 @@ def is_goal(th, om):
     return (wrap(th).abs() < 0.15) & (om.abs() < 0.6)
 
 
+NBINS = 21
+BIN_CENTERS = None  # set lazily per device
+
+
+def bins(device):
+    global BIN_CENTERS
+    if BIN_CENTERS is None or BIN_CENTERS.device != torch.device(device):
+        BIN_CENTERS = torch.linspace(-UMAX, UMAX, NBINS, device=device)
+    return BIN_CENTERS
+
+
 @torch.no_grad()
 def rollout(net, method, th, om, steps=250, ugrid=None):
     """Greedy control; success = reach AND HOLD the goal for 10 steps."""
@@ -98,6 +109,8 @@ def rollout(net, method, th, om, steps=250, ugrid=None):
     for t in range(steps):
         if method == "denoise":
             u = net(th, om).clamp(-UMAX, UMAX)
+        elif method == "denoise-disc":
+            u = bins(th.device)[net(th, om).argmax(-1)]
         else:
             # 1-step lookahead over torque grid, pick min predicted cost
             cand = []
@@ -119,7 +132,7 @@ def rollout(net, method, th, om, steps=250, ugrid=None):
 
 def train(method, iters, out_dir, K=200, batch=8192, lr=1e-3, device="cuda"):
     os.makedirs(out_dir, exist_ok=True)
-    net = Reg().to(device)
+    net = Reg(out=NBINS if method == "denoise-disc" else 1).to(device)
     ugrid = torch.linspace(-UMAX, UMAX, 9, device=device)
     if method == "value":
         target = Reg().to(device)
@@ -137,6 +150,9 @@ def train(method, iters, out_dir, K=200, batch=8192, lr=1e-3, device="cuda"):
         th, om, u_lab, depths = noising_batch(batch, K, device)
         if method == "denoise":
             loss = ((net(th, om) - u_lab) ** 2).mean()
+        elif method == "denoise-disc":
+            lab = torch.bucketize(u_lab, bins(device)) .clamp(0, NBINS - 1)
+            loss = torch.nn.functional.cross_entropy(net(th, om), lab)
         else:
             with torch.no_grad():
                 best = None
@@ -203,7 +219,7 @@ def test(device="cuda"):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--test", action="store_true")
-    ap.add_argument("--method", choices=["denoise", "value"])
+    ap.add_argument("--method", choices=["denoise", "denoise-disc", "value"])
     ap.add_argument("--iters", type=int)
     ap.add_argument("--out")
     args = ap.parse_args()

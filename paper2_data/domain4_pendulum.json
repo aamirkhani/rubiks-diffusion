@@ -1,0 +1,11 @@
+{
+  "domain": "pendulum swing-up (continuous state & action, underactuated)",
+  "protocol": "noising = exact reverse-time integration from upright under random torques (K<=200 steps); eval = swing-up from hanging +/-0.1 rad, success = reach and hold |theta|<0.15, |omega|<0.6 for 10 steps within 250; 2048 eval episodes, 30k iters each, identical 3x256 MLP backbone",
+  "denoise_mse_regression": {"swingup_rate": 0.0, "mean_steps": null,
+    "note": "epsilon-regression collapses to the posterior MEAN torque; near hanging the undo-torque posterior is bimodal (both spin directions), mean ~ 0 -> no energy pumping"},
+  "denoise_categorical_21bins": {"swingup_rate": 1.0, "mean_steps": 75.6,
+    "note": "same data, same backbone, cross-entropy over discretized torque: keeping the distribution (as diffusion samplers do) fixes the collapse"},
+  "value_baseline_lookahead": {"swingup_rate": 1.0, "mean_steps": 63.9,
+    "note": "cost-to-go bootstrapping over 9-torque grid + 1-step lookahead; slightly more efficient trajectories"},
+  "finding": "continuous domains break naive epsilon-REGRESSION, not the diffusion framing: the categorical/distributional denoiser succeeds; mode-averaging is the mechanism"
+}
