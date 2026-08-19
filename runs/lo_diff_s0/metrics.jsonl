@@ -3,3 +3,42 @@
 {"iter": 1500, "ema": 2.8254, "tgt_updates": 0}
 {"iter": 2000, "ema": 2.8048, "tgt_updates": 0}
 {"iter": 2500, "ema": 2.7846, "tgt_updates": 0}
+{"iter": 3000, "ema": 2.7698, "tgt_updates": 0}
+{"iter": 3500, "ema": 2.7472, "tgt_updates": 0}
+{"iter": 4000, "ema": 2.7251, "tgt_updates": 0}
+{"iter": 4500, "ema": 2.6968, "tgt_updates": 0}
+{"iter": 5000, "ema": 2.6729, "tgt_updates": 0}
+{"iter": 5000, "probe": {"5": 1.0, "10": 0.8555, "15": 0.8418, "25": 1.0}}
+{"iter": 5500, "ema": 2.6557, "tgt_updates": 0}
+{"iter": 6000, "ema": 2.6425, "tgt_updates": 0}
+{"iter": 6500, "ema": 2.6351, "tgt_updates": 0}
+{"iter": 7000, "ema": 2.6294, "tgt_updates": 0}
+{"iter": 7500, "ema": 2.6241, "tgt_updates": 0}
+{"iter": 8000, "ema": 2.6204, "tgt_updates": 0}
+{"iter": 8500, "ema": 2.62, "tgt_updates": 0}
+{"iter": 9000, "ema": 2.6166, "tgt_updates": 0}
+{"iter": 9500, "ema": 2.6148, "tgt_updates": 0}
+{"iter": 10000, "ema": 2.6099, "tgt_updates": 0}
+{"iter": 10000, "probe": {"5": 1.0, "10": 1.0, "15": 1.0, "25": 1.0}}
+{"iter": 10500, "ema": 2.6118, "tgt_updates": 0}
+{"iter": 11000, "ema": 2.6103, "tgt_updates": 0}
+{"iter": 11500, "ema": 2.6055, "tgt_updates": 0}
+{"iter": 12000, "ema": 2.6066, "tgt_updates": 0}
+{"iter": 12500, "ema": 2.6054, "tgt_updates": 0}
+{"iter": 13000, "ema": 2.6061, "tgt_updates": 0}
+{"iter": 13500, "ema": 2.6085, "tgt_updates": 0}
+{"iter": 14000, "ema": 2.6028, "tgt_updates": 0}
+{"iter": 14500, "ema": 2.6031, "tgt_updates": 0}
+{"iter": 15000, "ema": 2.6042, "tgt_updates": 0}
+{"iter": 15000, "probe": {"5": 1.0, "10": 1.0, "15": 1.0, "25": 1.0}}
+{"iter": 15500, "ema": 2.6035, "tgt_updates": 0}
+{"iter": 16000, "ema": 2.6044, "tgt_updates": 0}
+{"iter": 16500, "ema": 2.5988, "tgt_updates": 0}
+{"iter": 17000, "ema": 2.5994, "tgt_updates": 0}
+{"iter": 17500, "ema": 2.6006, "tgt_updates": 0}
+{"iter": 18000, "ema": 2.5972, "tgt_updates": 0}
+{"iter": 18500, "ema": 2.5977, "tgt_updates": 0}
+{"iter": 19000, "ema": 2.599, "tgt_updates": 0}
+{"iter": 19500, "ema": 2.6, "tgt_updates": 0}
+{"iter": 20000, "ema": 2.6001, "tgt_updates": 0}
+{"iter": 20000, "probe": {"5": 1.0, "10": 1.0, "15": 1.0, "25": 1.0}}

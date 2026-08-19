@@ -1,0 +1,8 @@
+{"iter": 500, "ema": 0.0387, "tgt_updates": 4}
+{"iter": 1000, "ema": 0.0287, "tgt_updates": 9}
+{"iter": 1500, "ema": 0.0416, "tgt_updates": 14}
+{"iter": 2000, "ema": 0.043, "tgt_updates": 19}
+{"iter": 2500, "ema": 0.0548, "tgt_updates": 22}
+{"iter": 3000, "ema": 0.0565, "tgt_updates": 24}
+{"iter": 3500, "ema": 0.0513, "tgt_updates": 26}
+{"iter": 4000, "ema": 0.0415, "tgt_updates": 30}

@@ -13,3 +13,8 @@
 {"iter": 6000, "ema": 1.0953, "tgt_updates": 0}
 {"iter": 6500, "ema": 1.0953, "tgt_updates": 0}
 {"iter": 7000, "ema": 1.0953, "tgt_updates": 0}
+{"iter": 7500, "ema": 1.0953, "tgt_updates": 0}
+{"iter": 8000, "ema": 1.0953, "tgt_updates": 0}
+{"iter": 8500, "ema": 1.0952, "tgt_updates": 0}
+{"iter": 9000, "ema": 1.0952, "tgt_updates": 0}
+{"iter": 9500, "ema": 1.0951, "tgt_updates": 0}
