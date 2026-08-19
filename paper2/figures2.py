@@ -138,3 +138,110 @@ if __name__ == "__main__":
     fig_slide24_training()
     fig_sokoban_depth()
     fig_pendulum_bars()
+
+
+def fig_domains_strip():
+    """Teaser: one real rendered instance per domain."""
+    import sys
+    sys.path.insert(0, ROOT)
+    import torch
+    import numpy as np
+    from domains.slide import SlideEnv
+    from domains.maze import MazeEnv, observe
+    from domains.sokoban import SokobanEnv
+    from domains.game2048 import spawn, S as S2048
+    from domains.hanoi import HanoiEnv
+
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    fig, axes = plt.subplots(1, 7, figsize=(7.0, 1.35))
+
+    def grid_ax(ax, title):
+        ax.set_xticks([]); ax.set_yticks([])
+        for s in ax.spines.values():
+            s.set_visible(False)
+        ax.set_title(title, fontsize=7.2, pad=3)
+
+    # 1: 24-puzzle
+    env = SlideEnv(5, dev)
+    st = env.scramble(1, 300, generator=torch.Generator(device=dev).manual_seed(1))
+    b = st[0].reshape(5, 5).cpu().numpy()
+    ax = axes[0]
+    ax.imshow((b > 0).astype(float), cmap="Oranges", vmin=-0.6, vmax=1.6)
+    for r in range(5):
+        for c in range(5):
+            if b[r, c]:
+                ax.text(c, r, str(b[r, c]), ha="center", va="center", fontsize=5)
+    grid_ax(ax, "24-puzzle\n(scale)")
+
+    # 2: maze
+    envm = MazeEnv(15, device=dev)
+    g = torch.Generator(device=dev).manual_seed(3)
+    walls, goal = envm.new_instances(1, generator=g)
+    stm = envm.scramble(walls, goal, 30, generator=g)
+    img = stm[0].reshape(15, 15).cpu().numpy().astype(float)
+    ax = axes[1]
+    ax.imshow(img, cmap="Greys", vmin=0, vmax=4)
+    grid_ax(ax, "maze\n(conditional)")
+
+    # 3: sokoban
+    envs = SokobanEnv(8, 3, device=dev)
+    w, go, bx, ag, _ = envs.instances_and_scramble(
+        1, 30, generator=torch.Generator(device=dev).manual_seed(5))
+    img = envs.render(w, go, bx, ag)[0].reshape(8, 8).cpu().numpy().astype(float)
+    ax = axes[2]
+    ax.imshow(img, cmap="YlOrBr", vmin=0, vmax=6)
+    grid_ax(ax, "Sokoban\n(irreversible)")
+
+    # 4: pendulum sketch
+    ax = axes[3]
+    th = 2.6
+    ax.plot([0, np.sin(th)], [0, np.cos(th)], lw=2.4, color=BLUE)
+    ax.plot([0], [0], "o", ms=4, color="k")
+    ax.plot([np.sin(th)], [np.cos(th)], "o", ms=8, color=BLUE)
+    ax.plot([0, 0], [0, 1.05], ls=":", lw=0.8, color=GRAY)
+    ax.set_xlim(-1.3, 1.3); ax.set_ylim(-1.3, 1.3)
+    ax.set_aspect("equal")
+    grid_ax(ax, "pendulum\n(continuous)")
+
+    # 5: 2048
+    g = torch.Generator(device=dev).manual_seed(0)
+    bb = torch.zeros(1, S2048, dtype=torch.int8, device=dev)
+    for _ in range(9):
+        bb = spawn(bb, g)
+    b4 = bb[0].reshape(4, 4).cpu().numpy()
+    ax = axes[4]
+    ax.imshow((b4 > 0).astype(float), cmap="Purples", vmin=-0.6, vmax=1.8)
+    for r in range(4):
+        for c in range(4):
+            if b4[r, c]:
+                ax.text(c, r, str(2 ** b4[r, c]), ha="center", va="center",
+                        fontsize=6)
+    grid_ax(ax, "2048\n(stochastic)")
+
+    # 6: hanoi
+    envh = HanoiEnv(10, dev)
+    sth = envh.scramble(1, 400,
+                        generator=torch.Generator(device=dev).manual_seed(2))
+    pegs = sth[0].cpu().numpy()
+    ax = axes[5]
+    heights = [0, 0, 0]
+    for disk in range(9, -1, -1):
+        p = int(pegs[disk])
+        wdt = 0.25 + 0.55 * (disk + 1) / 10
+        ax.barh(heights[p], wdt, left=p - wdt / 2, height=0.8,
+                color=ORANGE, edgecolor="white", linewidth=0.3)
+        heights[p] += 1
+    for p in range(3):
+        ax.plot([p, p], [0, 10.5], color=GRAY, lw=0.8, zorder=0)
+    ax.set_xlim(-0.6, 2.6); ax.set_ylim(0, 11)
+    grid_ax(ax, "Hanoi\n(horizon 1023)")
+
+    # 7: POMDP maze
+    obs = observe(stm, 15, 3)[0].reshape(15, 15).cpu().numpy().astype(float)
+    ax = axes[6]
+    ax.imshow(obs, cmap="Greys", vmin=0, vmax=4)
+    grid_ax(ax, "POMDP maze\n(partial obs)")
+
+    fig.tight_layout(w_pad=0.6)
+    fig.savefig(os.path.join(HERE, "fig2_domains.pdf"), bbox_inches="tight")
+    print("fig2_domains.pdf")

@@ -208,12 +208,14 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int, required=True)
     ap.add_argument("--K", type=int)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--h1", type=int, default=5000)
     ap.add_argument("--h2", type=int, default=1000)
     ap.add_argument("--blocks", type=int, default=4)
     ap.add_argument("--no-compile", action="store_true")
     ap.add_argument("--resume")
     args = ap.parse_args()
+    torch.manual_seed(args.seed)
     K = args.K or (300 if args.n == 5 else 31 if args.n == 3 else 120)
     train(args.method, args.n, args.iters, args.out, K,
           h1=args.h1, h2=args.h2, blocks=args.blocks,

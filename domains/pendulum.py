@@ -222,7 +222,9 @@ if __name__ == "__main__":
     ap.add_argument("--method", choices=["denoise", "denoise-disc", "value"])
     ap.add_argument("--iters", type=int)
     ap.add_argument("--out")
+    ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
+    torch.manual_seed(args.seed)
     if args.test:
         test()
     else:

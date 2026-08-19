@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
 
-OPEN, WALL, AGENT, GOAL = 0, 1, 2, 3
+OPEN, WALL, AGENT, GOAL, UNKNOWN = 0, 1, 2, 3, 4
 
 
 class MazeEnv:
@@ -195,3 +195,21 @@ def run_tests(device="cuda"):
 
 if __name__ == "__main__":
     run_tests()
+
+
+def observe(states, n, radius):
+    """POMDP view: cells beyond Chebyshev `radius` of the agent -> UNKNOWN.
+    The goal cell stays visible as a compass (goal direction is knowable)."""
+    import torch as _t
+    B = states.shape[0]
+    ap = (states == AGENT).float().argmax(dim=1)
+    ar, ac = ap // n, ap % n
+    rr = _t.arange(n, device=states.device)
+    gr = rr.view(1, n, 1).expand(B, n, n)
+    gc = rr.view(1, 1, n).expand(B, n, n)
+    dist = _t.maximum((gr - ar.view(-1, 1, 1)).abs(),
+                      (gc - ac.view(-1, 1, 1)).abs()).reshape(B, -1)
+    hidden = (dist > radius) & (states != GOAL)
+    out = states.clone()
+    out[hidden] = UNKNOWN
+    return out

@@ -14,8 +14,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import torch
 import torch.nn.functional as F
 
-from domains.maze import MazeEnv
+from domains.maze import MazeEnv, observe
 from model import PolicyNet, ValueNet
+
+
+OBS_RADIUS = None
+
+
+def _obs(x, n):
+    return observe(x, n, OBS_RADIUS) if OBS_RADIUS else x
 
 
 @torch.no_grad()
@@ -40,10 +47,10 @@ def rollout(env, net, method, states, goal, max_steps):
             legal[none] = env.legal_mask(sub[none])
         with torch.autocast("cuda", dtype=torch.bfloat16):
             if method == "denoise":
-                a = net(sub).float().masked_fill(~legal, -1e9).argmax(1)
+                a = net(_obs(sub, env.n)).float().masked_fill(~legal, -1e9).argmax(1)
             else:
                 nb = env.neighbors(sub, gl).reshape(-1, env.S)
-                v = net(nb).float().view(-1, env.M)
+                v = net(_obs(nb, env.n)).float().view(-1, env.M)
                 v = torch.where(env.is_solved(nb).view(-1, env.M),
                                 torch.zeros_like(v), v.clamp_min(0))
                 a = v.masked_fill(~legal, 1e9).argmin(1)
@@ -55,14 +62,17 @@ def rollout(env, net, method, states, goal, max_steps):
 
 
 def train(method, iters, out_dir, n=15, K=60, batch=8192, lr=1e-3,
-          device="cuda", h1=2048, h2=1024, blocks=3, resume=None):
+          device="cuda", h1=2048, h2=1024, blocks=3, resume=None, radius=None):
+    global OBS_RADIUS
+    OBS_RADIUS = radius
+    vocab_n = 5 if radius else 4
     os.makedirs(out_dir, exist_ok=True)
     env = MazeEnv(n, device=device)
     if method == "denoise":
-        net = PolicyNet(env.S, env.M, h1, h2, blocks, vocab=env.vocab).to(device)
+        net = PolicyNet(env.S, env.M, h1, h2, blocks, vocab=vocab_n).to(device)
     else:
-        net = ValueNet(env.S, h1, h2, blocks, vocab=env.vocab).to(device)
-        target = ValueNet(env.S, h1, h2, blocks, vocab=env.vocab).to(device)
+        net = ValueNet(env.S, h1, h2, blocks, vocab=vocab_n).to(device)
+        target = ValueNet(env.S, h1, h2, blocks, vocab=vocab_n).to(device)
         target.load_state_dict(net.state_dict())
         target.eval()
         for p in target.parameters():
@@ -119,18 +129,18 @@ def train(method, iters, out_dir, n=15, K=60, batch=8192, lr=1e-3,
         if method == "denoise":
             labels = pool[2][sl]
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                loss = F.cross_entropy(net_fwd(states).float(), labels)
+                loss = F.cross_entropy(net_fwd(_obs(states, env.n)).float(), labels)
         else:
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                 nb = env.neighbors(states, goal).reshape(-1, env.S)
-                v = tgt_fwd(nb).float().view(states.shape[0], env.M).clamp_min(0)
+                v = tgt_fwd(_obs(nb, env.n)).float().view(states.shape[0], env.M).clamp_min(0)
                 v = torch.where(env.is_solved(nb).view(states.shape[0], env.M),
                                 torch.zeros_like(v), v)
                 v = v.masked_fill(~env.legal_mask(states), 1e9)
                 y = 1.0 + v.min(dim=1).values
                 y = torch.where(env.is_solved(states), torch.zeros_like(y), y)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                loss = F.mse_loss(net_fwd(states).float(), y)
+                loss = F.mse_loss(net_fwd(_obs(states, env.n)).float(), y)
         opt.zero_grad(set_to_none=True)
         loss.backward()
         opt.step()
@@ -161,7 +171,7 @@ def train(method, iters, out_dir, n=15, K=60, batch=8192, lr=1e-3,
         if it % 2000 == 0 or it == iters:
             ck = {"iter": it, "net": net.state_dict(), "opt": opt.state_dict(),
                   "cfg": {"n": n, "method": method, "h1": h1, "h2": h2,
-                          "blocks": blocks, "K": K}}
+                          "blocks": blocks, "K": K, "radius": radius}}
             if method == "davi":
                 ck["target"] = target.state_dict()
             torch.save(ck, os.path.join(out_dir, "ckpt_latest.pt"))
@@ -173,6 +183,9 @@ if __name__ == "__main__":
     ap.add_argument("--method", choices=["denoise", "davi"], required=True)
     ap.add_argument("--iters", type=int, required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--resume")
+    ap.add_argument("--radius", type=int)
     args = ap.parse_args()
-    train(args.method, args.iters, args.out, resume=args.resume)
+    torch.manual_seed(args.seed)
+    train(args.method, args.iters, args.out, resume=args.resume, radius=args.radius)

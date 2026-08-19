@@ -45,5 +45,25 @@
       "avg_len": 5.5,
       "secs": 1.5
     }
+  },
+  "hybrid_denoise_proposes_value_scores": {
+    "lambda": 2.0,
+    "val_rate_depth40": 0.972,
+    "depth_10": {
+      "solve_rate": 0.9986,
+      "secs": 0.3
+    },
+    "depth_25": {
+      "solve_rate": 0.9914,
+      "secs": 0.6
+    },
+    "depth_40": {
+      "solve_rate": 0.9682,
+      "secs": 0.9
+    },
+    "depth_60": {
+      "solve_rate": 0.9296,
+      "secs": 1.3
+    }
   }
 }

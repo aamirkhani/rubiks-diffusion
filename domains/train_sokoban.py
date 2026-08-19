@@ -163,6 +163,8 @@ if __name__ == "__main__":
     ap.add_argument("--method", choices=["denoise", "davi"], required=True)
     ap.add_argument("--iters", type=int, required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--resume")
     args = ap.parse_args()
+    torch.manual_seed(args.seed)
     train(args.method, args.iters, args.out, resume=args.resume)

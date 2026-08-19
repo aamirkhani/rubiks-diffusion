@@ -128,9 +128,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--iters", type=int)
     ap.add_argument("--out")
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--eval", action="store_true")
     ap.add_argument("--ckpt")
     args = ap.parse_args()
+    torch.manual_seed(args.seed)
     if args.eval:
         ck = torch.load(args.ckpt, map_location="cuda", weights_only=True)
         net = PolicyNet(S, 4, 2048, 1024, 3, vocab=VOCAB).cuda()
