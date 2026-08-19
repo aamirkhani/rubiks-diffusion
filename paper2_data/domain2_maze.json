@@ -1,0 +1,21 @@
+{
+  "domain": "procedural mazes 15x15 (conditional, per-instance goal)",
+  "n_eval_instances": 20000,
+  "start_sampling": "uniform over reachable cells (exact BFS field)",
+  "denoise": {
+    "iter": null,
+    "solve_rate": 0.7597,
+    "avg_len": 12.12,
+    "avg_optimal": 10.2,
+    "optimality_ratio": 1.205,
+    "eval_secs": 1.2
+  },
+  "davi": {
+    "iter": null,
+    "solve_rate": 0.7656,
+    "avg_len": 10.07,
+    "avg_optimal": 9.36,
+    "optimality_ratio": 1.054,
+    "eval_secs": 4.9
+  }
+}
