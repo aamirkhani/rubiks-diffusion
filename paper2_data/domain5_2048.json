@@ -1,0 +1,23 @@
+{
+  "domain": "2048 (stochastic spawns; goal = tile set)",
+  "iter": 40000,
+  "denoiser": {
+    "mean_max_tile": 105.3,
+    "reach_128": 0.54,
+    "reach_256": 0.0708,
+    "reach_512": 0.0
+  },
+  "random": {
+    "mean_max_tile": 109.1,
+    "reach_128": 0.5532,
+    "reach_256": 0.0903,
+    "reach_512": 0.0005
+  },
+  "greedy_merge": {
+    "mean_max_tile": 238.4,
+    "reach_128": 0.9482,
+    "reach_256": 0.6182,
+    "reach_512": 0.1353
+  },
+  "finding": "stochastic dynamics break naive scramble inversion: the deterministic reverse process (un-slides/un-spawns) induces a state distribution and undo-labels unrelated to real stochastic play; the denoiser performs at random-play level while a trivial greedy-merge heuristic more than doubles its score"
+}
