@@ -23,6 +23,15 @@ DEV = "cuda"
 
 
 @torch.no_grad()
+def _fwd(net, x, chunk=16384):
+    outs = []
+    for i in range(0, x.shape[0], chunk):
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            outs.append(net(x[i:i + chunk]).float())
+    return torch.cat(outs)
+
+
+@torch.no_grad()
 def beam(env, net, method, states, width, max_depth, chunk=2000):
     """Legality-aware batched beam. Scores: cumulative logprob (denoise) or
     predicted cost-to-go (davi)."""
@@ -50,18 +59,17 @@ def beam(env, net, method, states, width, max_depth, chunk=2000):
             flat = bm.reshape(A * W, env.S)
             legal = env.legal_mask(flat).view(A, W * env.M)
             nb = env.neighbors(flat).reshape(A, W * env.M, env.S)
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                if method == "denoise":
-                    lp = F.log_softmax(net(flat).float(), 1).view(A, W * env.M)
-                    cand = score.unsqueeze(2).expand(A, W, env.M).reshape(A, -1) + lp
-                    cand = cand.masked_fill(~legal, -1e30)
-                    better = torch.argsort(cand, dim=1, descending=True)
-                else:
-                    v = net(nb.reshape(-1, env.S)).float().view(A, W * env.M)
-                    v = torch.where(env.is_solved(nb.reshape(-1, env.S)).view(A, -1),
-                                    torch.zeros_like(v), v.clamp_min(0))
-                    cand = v.masked_fill(~legal, 1e30)
-                    better = torch.argsort(cand, dim=1)
+            if method == "denoise":
+                lp = F.log_softmax(_fwd(net, flat), 1).view(A, W * env.M)
+                cand = score.unsqueeze(2).expand(A, W, env.M).reshape(A, -1) + lp
+                cand = cand.masked_fill(~legal, -1e30)
+                better = torch.argsort(cand, dim=1, descending=True)
+            else:
+                v = _fwd(net, nb.reshape(-1, env.S)).view(A, W * env.M)
+                v = torch.where(env.is_solved(nb.reshape(-1, env.S)).view(A, -1),
+                                torch.zeros_like(v), v.clamp_min(0))
+                cand = v.masked_fill(~legal, 1e30)
+                better = torch.argsort(cand, dim=1)
             solved = env.is_solved(nb.reshape(-1, env.S)).view(A, W * env.M) & legal
             hit = solved.any(1)
             if hit.any():

@@ -12,5 +12,17 @@
     "beam_extra_solved": 1,
     "beam_secs": 0.9,
     "total_rate": 1.0
+  },
+  "davi": {
+    "iter": 62000,
+    "n": 500,
+    "scramble": 1000,
+    "greedy_rate": 0.006,
+    "greedy_avg_len": 221.3,
+    "greedy_secs": 1.7,
+    "beam_width": 128,
+    "beam_extra_solved": 0,
+    "beam_secs": 194.0,
+    "total_rate": 0.006
   }
 }
