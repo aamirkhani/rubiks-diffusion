@@ -7,10 +7,16 @@
 \usepackage[expansion=false]{microtype}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{xcolor}
+\usepackage{caption}
 \usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{pifont}
+\newcommand{\yes}{\textcolor{green!45!black}{\ding{51}}}
+\newcommand{\no}{\textcolor{red!70!black}{\ding{55}}}
+\newcommand{\cond}{\textcolor{orange!85!black}{$\triangle$}}
+\input{numbers.tex}
 
 \title{Scramble Inversion Beyond Groups:\\
-Mapping Where Denoising Diffusion Solves Sequential Decision Problems}
+A Ten-Domain Map of Where Denoising Diffusion\\ Solves Sequential Decision Problems}
 
 \author{Aamer Khani\thanks{Experiments, implementation, and manuscript
 preparation were carried out with the assistance of Claude (Anthropic).
@@ -20,176 +26,214 @@ Correspondence: \texttt{aamer.khani.1@gmail.com}.}}
 \begin{document}
 \maketitle
 
+\begin{center}
+\includegraphics[width=\linewidth]{fig2_domains.pdf}
+\captionof{figure}{The ten domains, each chosen to remove one property that
+the Rubik's Cube---where scramble inversion excels~\citep{khani2026}---quietly
+provides. Every panel is a real environment instance from the released code.}
+\label{fig:domains}
+\vspace{0.4em}
+\end{center}
+
 \begin{abstract}
-Scramble inversion---train a denoiser to predict the move that undoes the
-last step of a random walk from the goal, then solve by reverse-process
-rollout---matches or beats deep approximate value iteration (DAVI) on the
-Rubik's Cube at a fraction of the compute~\citep{khani2026}. Is this an
-accident of the cube's structure, or does ``any RL problem can be a diffusion
-problem''? We test the hypothesis with an \emph{assumption ladder}: five
-domains, each removing one property the cube quietly provides---group
-structure (24-puzzle), a fixed environment and goal (procedural mazes),
-invertible actions (Sokoban), discreteness (pendulum swing-up), and
-determinism (2048)---each with a matched-architecture, matched-compute value
-baseline on one consumer GPU. The map that emerges is sharp. At scale on
-reversible discrete spaces the recipe dominates: on the 24-puzzle
-($7.7\times10^{24}$ states) the denoiser solves $100\%$ of thousand-move
-scrambles ($99.8\%$ with no search at all) while DAVI solves $0.6\%$ at
-matched iterations---yet on the exhaustible 8-puzzle both reach $100\%$ and
-DAVI is near-optimal, locating the crossover at state-space scale.
-Per-instance goal conditioning (mazes) is a tie. Irreversibility flips the
-result: reverse (pull-based) walks cannot demonstrate deadlocks, so the
-denoiser pushes boxes into corners it can never leave ($66\%$ vs.\ DAVI's
-$83\%$). Continuous actions break naive $\epsilon$-\emph{regression}
-entirely ($0\%$ swing-up: the bimodal undo-torque posterior collapses to its
-useless mean) but not the framing---the same data with a 21-bin categorical
-head reaches $100\%$, isolating distributional output, not discreteness, as
-the requirement. Stochastic dynamics (2048) defeat the recipe outright: the
-denoiser plays at the level of uniform random moves. The hypothesis
-therefore survives in a refined form: scramble inversion is the method of
-choice for large, deterministic, reversible, goal-reaching problems---and we
-give mechanisms, not just scoreboards, for each boundary.
+Scramble inversion---train a denoiser to predict the action that undoes the
+last step of a random walk from the goal, then act by reverse-process
+rollout---beats deep approximate value iteration (DAVI) on the Rubik's Cube
+at a fraction of the compute~\citep{khani2026}. Does ``every RL problem can
+be a diffusion problem''? We answer with a ten-domain \emph{assumption
+ladder}, each domain deleting one property of the cube: group structure
+(24-puzzle), fixed goal and environment (procedural mazes), invertible
+actions (Sokoban), discreteness (pendulum), determinism (2048), bounded
+horizon (Tower of Hanoi, optimal solutions of 1023 moves), full
+observability (POMDP mazes), ordered solutions (Lights Out), monotone
+progress (Mountain Car), and conservation (Peg Solitaire). Every domain is
+run under a matched-architecture, matched-compute protocol against a value
+baseline on one consumer GPU, with exact oracles wherever the state space
+permits and mechanical replay verification of every claimed solution. The
+resulting map is sharp and mechanistic. Scramble inversion \emph{dominates
+at scale}: $\slideDNrate$ vs.\ $\slideDVrate$ on the 24-puzzle
+($7.7\times10^{24}$ states) at matched iterations. It survives conditioning,
+partial observability, commutativity, and non-monotone dynamics. It has two
+repairable failure modes: with irreversible actions its reverse-only data is
+deadlock-blind (Sokoban: $\sokoDN$ vs.\ DAVI's $\sokoDV$), which a
+zero-training hybrid---denoiser proposes, value function vetoes---not only
+repairs but turns into the best solver ($\sokoHY$); and with continuous
+actions, naive $\epsilon$-regression collapses to a useless posterior mean
+($\pendMSE$ swing-up) while the same data with a distributional head reaches
+$\pendDISC$. It has one hard boundary: stochastic dynamics (2048), where the
+deterministic reverse process describes a game that is never played and the
+denoiser performs at random-play level. We conclude with a practitioner's
+checklist and release all ten environments, trainers, and logs.
 \end{abstract}
 
 \section{Introduction}
 
-A companion study~\citep{khani2026} showed that the Rubik's Cube can be solved by
-treating scrambling as the forward process of a discrete diffusion model:
-random generator moves are the noise, the scramble depth is the timestep, and
-a denoiser trained by cross-entropy to predict the inverse of the last
-scramble move solves cubes by reverse-process rollout, matching DAVI's
-$100\%$ solve rate at $2.8\times$ less training wall-clock with $5\times$
-cheaper iterations. The natural next question---posed by the strong form of
-the hypothesis, ``\emph{every} RL problem can be done as diffusion, and may
-train faster''---is which properties of the cube that result actually used.
+The companion study~\citep{khani2026} formalized cube solving as discrete
+denoising diffusion on a Cayley graph: random moves are the noise, scramble
+depth is the timestep, and a categorical denoiser trained to invert the last
+scramble move solves fully scrambled cubes by reverse-process rollout,
+matching DAVI~\citep{agostinelli2019} at $2.8\times$ less wall-clock. That
+result invites the strong hypothesis, posed by the first author: \emph{every
+reinforcement-learning problem can be recast as diffusion, and may train
+faster}. This paper maps the hypothesis's actual extent.
 
-The cube provides five such properties simultaneously: (i) its moves form a
-\emph{group} acting freely on states; (ii) there is a \emph{single, fixed
-goal} in a \emph{fixed environment}; (iii) every action is
-\emph{invertible}; (iv) states and actions are \emph{discrete}; (v) dynamics
-are \emph{deterministic}. Rather than accumulate more successes on
-cube-like puzzles, we designed one domain per removed assumption
-(Table~\ref{tab:ladder}) and ran the identical recipe against a
-matched-architecture value-learning baseline in each, all on one RTX~5080
-laptop GPU, with the same verification discipline as the companion paper
-(exact oracles where the space permits; every claimed solution replayed in
-the environment).
+The cube bundles many conveniences at once: a group action, one fixed goal,
+invertible moves, discrete states and actions, deterministic dynamics,
+modest solution lengths, full observability, ordered solutions, monotone
+usefulness of progress, and conservation of the state's ``material''. Any of
+these could be the load-bearing one. We therefore built ten environments
+(Figure~\ref{fig:domains}), each deleting exactly one property, and ran the
+identical recipe against a matched value-learning baseline in every one.
+Three principles carried over from the companion paper: (i) \emph{matched
+protocol}---same residual-MLP backbone, batch, optimizer, and schedule, so
+the training objective is the only variable; (ii) \emph{exact
+validation}---five of the ten domains admit exhaustive oracles (8-puzzle:
+181{,}440 states; Hanoi: 59{,}049; Lights Out: GF(2) algebra; per-instance
+BFS fields for both maze variants), and every environment ships a test that
+reproduces a known exact quantity before any training is trusted; (iii)
+\emph{replay verification}---no solver output is believed until its action
+sequence is re-executed in the environment.
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{llll}
+\begin{tabular}{clllc}
 \toprule
-Domain & Removes & Winner & Mechanism \\
+\# & Domain & Removes & Outcome (greedy, matched) & Verdict \\
 \midrule
-8-puzzle ($1.8\times10^5$) & --- (control) & tie ($100\%$/$100\%$) & value memorizes small spaces \\
-24-puzzle ($7.7\times10^{24}$) & group structure & \textbf{denoiser} ($100\%$ vs $0.6\%$) & bootstrap can't reach depth \\
-Mazes (procedural) & fixed goal/env & tie ($76\%$/$77\%$) & conditioning taxes both \\
-Sokoban & invertibility & \textbf{value} ($83\%$ vs $66\%$) & reverse data is deadlock-blind \\
-Pendulum & discreteness & tie$^{*}$ ($100\%$/$100\%$) & $^{*}$only with distributional head \\
-2048 & determinism & \textbf{neither} (denoiser $=$ random) & reverse process models the wrong game \\
+1 & 24-puzzle & group structure & \textbf{denoiser} $\slideDNrate$ vs $\slideDVrate$ & \yes \\
+2 & mazes & fixed goal/env & tie: $\mazeDN$ vs $\mazeDV$ & \yes \\
+3 & Sokoban & invertibility & value wins ($\sokoDN$ vs $\sokoDV$); \textbf{hybrid $\sokoHY$} & \cond \\
+4 & pendulum & discreteness & $\pendMSE \to \pendDISC$ with distributional head & \cond \\
+5 & 2048 & determinism & denoiser $=$ random ($\gDN$ vs $\gRAND$) & \no \\
+6 & Hanoi & bounded horizon & $\hanoiDN$ vs $\hanoiDV$ (all 59{,}049 states) & \yes \\
+7 & POMDP maze & full observability & $\pomdpDN$ vs $\pomdpDV$ & \yes \\
+8 & Lights Out & ordered solutions & $\loDN$ vs $\loDV$ & \yes \\
+9 & Mountain Car & monotone progress & $\mcDN$ vs $\mcVAL$ & \yes \\
+10 & Peg Solitaire & conservation & $\pegDN$ vs $\pegDV$ & \cond \\
 \bottomrule
 \end{tabular}
-\caption{The assumption ladder and outcomes. ``Winner'' refers to greedy
-(search-free) solving under matched training; see the domain sections for
-full protocols.}
+\caption{The assumption ladder. \yes{} = scramble inversion is doable and
+competitive or dominant; \cond{} = doable with a specific, identified
+adaptation (hybrid value veto; distributional head); \no{} = fails for a
+structural reason. Ranges in the text are min--max over 3 seeds.}
 \label{tab:ladder}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{fig2_summary.pdf}
-\caption{Headline success rates across the ladder (orange: denoiser; blue:
-matched value baseline; gray: 2048 heuristic reference, dotted line: random
-play). Success metric per domain: 24-puzzle and Sokoban (depth 60), solve
-rate; mazes, fresh-instance solve rate; pendulum, swing-up-and-hold;
-2048, reaching the 256 tile.}
-\label{fig:summary}
-\end{figure}
-
-Our contribution is not a new algorithm but a \emph{boundary map with
-mechanisms}: each domain isolates one assumption, each outcome comes with an
-ablation or diagnostic that explains it, and all code, logs, and per-domain
-result files are released.
-
-\section{The recipe and its five pillars}
+\section{The recipe, its baseline, and one architecture}
 \label{sec:recipe}
 
-Given an environment with goal set $G$, the scramble-inversion recipe is:
-(1) sample a noising walk $s_0 \in G,\; s_k = T(s_{k-1}, a_k)$ where $T$ is a
-\emph{reverse} transition kernel and $a_k$ random noise ops, with depth
-$t \sim \mathrm{Unif}\{1..K\}$ (linear schedule); (2) train
-$p_\theta(\,\cdot\mid s_t)$ by cross-entropy (or regression) to predict the
-forward action that undoes $a_t$; (3) act by greedy rollout of $p_\theta$,
-optionally with beam search. The five pillars are where each step can break:
-step (1) needs a way to run dynamics \emph{backward from the goal}
-(invertibility or an auxiliary reverse kernel), and needs the induced state
-distribution to resemble states met at solve time (determinism); step (2)
-needs the undo-posterior's summary (argmax or mean) to be a good action
-(discreteness/distributional output); step (3) needs the goal to be reachable
-by local descent (scale is the denoiser's friend here, and the value
-baseline's enemy). The domains below stress each in turn. Baselines are DAVI
-with the identical backbone (residual MLP, LayerNorm), batch (8--10k), Adam,
-and schedule, differing only in head and objective, exactly as in the
-companion paper.
+\textbf{Recipe.} Sample a noising walk from the goal using a reverse
+transition kernel (the inverse moves themselves when actions are invertible;
+pulls, un-jumps, un-slides, or reverse-time integration otherwise), with
+depth $t \sim \mathrm{Unif}\{1..K\}$; train $p_\theta(a \mid s)$ by
+cross-entropy to predict the forward action that undoes the last noise op;
+act by greedy rollout (beam search optional). \textbf{Baseline.} DAVI: a
+cost-to-go net trained by one-step bootstrapped targets over the
+\emph{forward} dynamics, acting by 1-step lookahead---identical backbone,
+differing only in head and loss. \textbf{Architecture}
+(Figure~\ref{fig:arch}): all ten domains and both objectives share one
+residual MLP; only the one-hot input width, the head, and the loss change.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.94\linewidth]{fig2_architecture.pdf}
+\caption{One architecture across the entire study. Left: per-domain one-hot
+encodings ($S$ tokens, vocabulary $|V|$; the two continuous domains use
+3 physical features instead). Middle: the shared LayerNorm residual MLP.
+Right: the two heads; the denoiser head shows a \emph{real} forward pass of
+the trained Sokoban policy.}
+\label{fig:arch}
+\end{figure}
+
+\section{Watching noising and denoising in every domain}
+\label{sec:gallery}
+
+Figures~\ref{fig:galA} and~\ref{fig:galB} are the study in pictures. For
+each domain the top strip runs the \emph{forward schedule}: the goal state
+at $t{=}0$ progressively destroyed by the domain's noise operator---random
+slides, reverse-time torques, pulls, un-jumps, presses---through every
+intermediate state to full noise at $t{=}1$. The bottom strip runs the
+\emph{trained reverse process} on a fresh fully-noised instance: each panel
+is an actual intermediate state of the greedy rollout, ending in the goal
+(\yes) or not (\no). The 2048 row makes the stochasticity failure visible:
+forward play under random spawns has no relation to the deterministic
+reverse process the denoiser was trained on, and the board fills with
+unmergeable debris.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.98\linewidth]{fig2_gallery_A.pdf}
+\caption{Noising and denoising, domains 1--5. Top strip of each pair: the
+forward (noising) schedule from the goal, with intermediate states at the
+labeled $t$. Bottom strip: the trained denoiser's actual greedy trajectory
+from a fresh fully-noised state back to the goal (replay-verified; Sokoban
+row uses the hybrid). The 2048 denoising row fails by construction of the
+domain, not of the run.}
+\label{fig:galA}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.98\linewidth]{fig2_gallery_B.pdf}
+\caption{Noising and denoising, domains 6--10: Hanoi, POMDP maze (the strip
+shows the agent's masked view), Lights Out, Mountain Car (reverse-time
+noising visible as the car being carried away from the flag), and Peg
+Solitaire (noising = un-jumps that add pegs; denoising = jumps that remove
+them).}
+\label{fig:galB}
+\end{figure}
 
 \section{Results along the ladder}
+\label{sec:results}
 
-\subsection{Scale without group structure: sliding-tile puzzles}
-
-The 15/24-puzzle family drops the group property (legal moves depend on the
-blank's position) while keeping everything else. On the \textbf{8-puzzle},
-whose 181{,}440 states we sweep exhaustively against an exact BFS oracle,
-\emph{both} methods solve $100\%$ of all states greedily; DAVI is nearly
-optimal (avg.\ 21.99 moves vs.\ optimum 21.97; $99.5\%$ of its argmax moves
-reduce true distance) while the denoiser gives up $\sim$1 move ($88.7\%$).
-Small spaces are value iteration's best case: the scalar function can be
-learned everywhere. On the \textbf{24-puzzle} ($7.7\times10^{24}$ states,
-scrambles of 1000 moves), the picture inverts completely
-(Figure~\ref{fig:slide24}): the denoiser reaches $100\%$ greedy solve rate
-on every probe depth by 60k iterations ($\sim$1.9\,h) and solves
-$500/500$ evaluation scrambles ($99.8\%$ with no search; avg.\ 139.6 moves);
-DAVI at matched iterations solves $0.6\%$, its bootstrapped values never
-propagating to the depths where scrambles live. Scale, not group structure,
-is what the cube result needed.
+\subsection{Scale is the denoiser's regime (24-puzzle, 8-puzzle, Hanoi)}
+On the 24-puzzle the denoiser reaches $100\%$ greedy on every probe depth by
+60k iterations and solves 500/500 thousand-move scrambles
+($\slideDNgreedy$ with no search); DAVI at matched iterations solves
+$\slideDVrate$ (Figure~\ref{fig:slide24}): bootstrapped values simply never
+propagate 100+ moves out in a $7.7\times10^{24}$-state space. The control
+puzzles calibrate the claim: on the exhaustible 8-puzzle both methods solve
+$100\%$ of all 181{,}440 states (3-seed greedy: denoiser \slideEightAgg{},
+DAVI \slideEightAggDV{}) and DAVI is nearly move-optimal
+($\slideEightDVmq$ of its moves reduce true distance vs.\
+$\slideEightDNmq$)---in small spaces value learning is the sharper tool. On
+Hanoi, whose 59{,}049 states we also sweep exhaustively but whose solutions
+run to 1023 moves, the denoiser attains \hanoiDN{} versus DAVI's
+\hanoiDV{}: extreme horizon with a tiny state space behaves like the
+8-puzzle, not the 24-puzzle---it is \emph{state-space scale}, not solution
+length, that separates the methods.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.9\linewidth]{fig2_slide24.pdf}
-\caption{24-puzzle greedy solve rate during training by scramble depth
-(left: denoiser; right: DAVI, same axes). The denoiser saturates all depths
-by 60k iterations; DAVI's coverage grows outward from the goal and reaches
-$6\%$ at depth 200 by the matched budget.}
+\caption{24-puzzle greedy solve rate during training, by scramble depth
+(left: denoiser; right: DAVI, same axes and budget).}
 \label{fig:slide24}
 \end{figure}
 
-\subsection{Conditioning: procedural mazes}
+\subsection{Conditioning and partial observability are not boundaries}
+Procedural mazes (fresh walls and goal each instance; exact per-instance BFS
+oracles) end in a statistical tie: \mazeDN{} vs.\ \mazeDV{} on 20k held-out
+instances, with DAVI's paths closer to optimal ($1.05\times$ vs
+$1.21\times$) and the denoiser $4\times$ faster to evaluate. Restricting the
+policy to a $7{\times}7$ window (POMDP) degrades both methods together
+(\pomdpDN{} vs \pomdpDV{}): the information bottleneck, not the objective,
+is binding. Conditional denoising works as conditional diffusion suggests it
+should.
 
-With a fresh random obstacle grid and goal cell per instance, the denoiser
-becomes conditional, $p_\theta(a \mid s, \mathrm{maze})$---the analogue of
-conditional diffusion. On 20k held-out instances with starts sampled
-uniformly over reachable cells (exact per-instance BFS oracles), the methods
-tie: $76.0\%$ (denoiser) vs.\ $76.6\%$ (DAVI), with DAVI's paths closer to
-optimal ($1.05\times$ vs.\ $1.21\times$ the exact distance) and the denoiser
-$4\times$ faster to evaluate. Per-instance conditioning taxes both methods
-equally; neither the diffusion framing nor value bootstrapping has a
-structural advantage here.
-
-\subsection{Irreversibility: Sokoban}
-
-Sokoban's pushes cannot be undone, so the noising walk uses \emph{pulls}
-(reverse dynamics available only at training time); every generated instance
-is solvable by construction, which we verify by replaying each pull sequence
-backward as pushes. The value baseline wins at every depth
-(Figure~\ref{fig:sokoban}): $83.1\%$ vs.\ $66.5\%$ at pull-depth 60. The
-mechanism is visible in the construction itself: \emph{reverse walks can
-never enter a deadlock} (a pulled box is never against a wall it cannot
-leave), so the denoiser's data contains no signal about which pushes are
-fatal, and its failures are dominated by boxes pushed into corners. DAVI's
-bootstrap runs through the \emph{forward} dynamics, so dead states keep high
-cost-to-go and are avoided. When actions are irreversible, learning from
-reverse experience alone is structurally blind to exactly the mistakes that
-matter.
+\subsection{Irreversibility: the failure with a constructive fix (Sokoban, Peg Solitaire)}
+Reverse (pull-based) walks cannot enter deadlocks, so the denoiser's data
+contains no signal about fatal pushes: it loses to DAVI at every depth
+($\sokoDN$ vs $\sokoDV$ at pull-depth 60, Figure~\ref{fig:soko}). The fix
+requires \emph{no new training}: act by
+$\arg\max_a [\log p_\theta(a\mid s) - \lambda V(s_a')]$---the denoiser
+proposes a direction, the value net (which bootstraps through forward
+dynamics and therefore knows dead states) vetoes it. With $\lambda$ chosen
+on a held-out split, the hybrid solves $\sokoHY$ at depth 60,
+\emph{surpassing both parents}. Peg Solitaire, whose jumps destroy a peg
+each move (nothing is conserved and deadlocks abound), replays the pattern
+at rung ten: denoiser alone \pegDN{}, DAVI \pegDV{} (depth-25 instances).
 
 \begin{figure}[t]
 \centering
@@ -201,92 +245,92 @@ matter.
 \centering
 \includegraphics[width=\linewidth]{fig2_pendulum.pdf}
 \end{minipage}
-\caption{\textbf{Left (Sokoban):} solve rate vs.\ instance difficulty; the
-gap is deadlock-blindness of reverse-only training. \textbf{Right
-(pendulum):} the continuous ablation --- $\epsilon$-regression collapses to
-the bimodal posterior's mean ($0\%$); the same data and backbone with a
-21-bin categorical head reaches $100\%$; value lookahead also $100\%$.}
-\label{fig:sokoban}
+\caption{\textbf{Left:} Sokoban solve rate vs.\ difficulty; reverse-only
+training is deadlock-blind. \textbf{Right:} the pendulum ablation ---
+$\epsilon$-regression collapses to the bimodal posterior's mean; the same
+data with a 21-bin categorical head restores $100\%$.}
+\label{fig:soko}
 \end{figure}
 
-\subsection{Continuity: pendulum swing-up}
+\subsection{Continuity and non-monotonicity (pendulum, Mountain Car)}
+Naive $\epsilon$-\emph{regression} on the undoing torque fails absolutely
+($\pendMSE$ swing-up): near hanging, reverse walks spin both ways, the
+posterior over undoing torques is bimodal, and its MSE-optimal mean is zero
+torque. The identical data and backbone with a 21-bin categorical head
+reaches $\pendDISC$ (value baseline: $\pendVAL$). The requirement is
+distributional output---exactly why diffusion models sample rather than
+regress---not discreteness. Mountain Car then confirms that
+\emph{non-monotone} progress is no obstacle: reverse-time noising naturally
+demonstrates the momentum-building detour, and the categorical denoiser
+reaches the flag in \mcDN{} of episodes (value baseline \mcVAL{}).
 
-For the underactuated pendulum ($u_{\max}=2 < mgl = 10$), the noising
-process integrates the dynamics backward in time from upright under random
-torques---the reverse step is the exact inverse of the semi-implicit Euler
-forward step (error $<10^{-6}$), so every noising trajectory is a genuine
-forward trajectory reversed. Naive $\epsilon$-\emph{regression} fails
-totally ($0\%$ swing-up from hanging, 2048 episodes): near the bottom, the
-posterior over undoing torques is bimodal (reverse walks spin both ways) and
-the MSE-optimal prediction is its mean---zero torque, no energy pumping.
-Replacing the scalar head with a 21-bin categorical head---same data, same
-backbone, cross-entropy---restores $100\%$ ($75.6$ steps mean); the value
-baseline with 1-step lookahead over a torque grid also reaches $100\%$
-($63.9$ steps). Continuity per se is not the boundary; \emph{keeping the
-distribution} is. This is precisely why diffusion samplers iterate and
-sample rather than regress, reproduced here as a two-line ablation.
+\subsection{Commutativity (Lights Out)}
+When solutions are unordered sets, ``the move that undoes the last noise
+op'' is maximally ambiguous---any member of a minimal solution set is
+correct. The Bayes-optimal denoiser simply spreads mass over that set, and
+greedy rollout peels it off one press at a time: \loDN{} solve rate (DAVI
+\loDV{}), with solution lengths checked against the exact GF(2) optimum.
+Label ambiguity is averaged over, not compounded.
 
-\subsection{Stochasticity: 2048}
+\subsection{Stochasticity: the hard boundary (2048)}
+Trained on deterministic reverse play, the denoiser scores at random-play
+level in the real game ($\gDN$ vs.\ random's $\gRAND$ reaching the 256
+tile), while a one-line greedy-merge heuristic reaches $\gHEUR$. The
+mechanism is structural: with exogenous randomness, the reverse process's
+marginal corresponds to no realizable policy's state distribution, and its
+undo-labels answer questions the forward game never asks. Repairing this
+demands a fundamentally different reverse process (marginalizing over spawn
+randomness), not a tweak.
 
-2048 interleaves chosen slides with random tile spawns, and its goal is a
-set of states. Our best-faith adaptation trains the denoiser on
-deterministic reverse play (tile un-merges and un-spawns from a constructed
-256-tile board) and evaluates in the real stochastic game. The result is an
-unambiguous failure: the denoiser's play is statistically indistinguishable
-from uniform random legal moves (mean max tile 105 vs.\ 109; reaching 256 in
-$7.1\%$ vs.\ $9.0\%$ of games), while a one-line greedy-merge heuristic more
-than doubles both (238; $61.8\%$). With stochastic dynamics the reverse
-process describes a game that is never actually played: the marginal it
-induces, and the undo-labels it provides, do not correspond to any policy's
-state distribution under real spawns. Determinism is not a convenience of
-the recipe; it is a requirement.
+\section{Discussion: a practitioner's checklist}
+\label{sec:discussion}
 
-\section{Discussion}
+The strong hypothesis fails; a precise and more useful statement survives.
+Before reaching for scramble inversion, ask:
+\begin{enumerate}
+\item \textbf{Can you run the dynamics backward from the goal,
+deterministically?} If randomness is exogenous (2048), stop; nothing short
+of a stochastic-aware reverse process will do.
+\item \textbf{Is the state space too large to bootstrap a value function
+across?} If yes (cube, 24-puzzle), scramble inversion is likely the
+\emph{best} tool, not merely a viable one. If the space is small (8-puzzle,
+Hanoi), value learning will match it and beat it on optimality.
+\item \textbf{Are actions irreversible?} Expect deadlock-blindness; budget
+for the value-veto hybrid, which in our experiments is strictly the best
+policy (Sokoban: $\sokoHY$).
+\item \textbf{Are actions continuous?} Keep the distribution: discretize or
+sample; never regress the mean.
+\item Conditioning, partial observability, unordered solutions, extreme
+horizons, and non-monotone progress required \emph{no} adaptation in our
+experiments.
+\end{enumerate}
 
-\textbf{The refined hypothesis.} ``Every RL problem can be diffusion'' does
-not survive; something more useful does. Scramble inversion is the method of
-choice when (a) the state space is too large for value bootstrapping to
-cover, (b) a faithful reverse kernel exists (invertible actions, or reverse
-dynamics whose support matches forward play), (c) dynamics are
-deterministic, and (d) the action posterior is represented distributionally.
-Condition (a) is not incidental---it is where the method's advantage
-\emph{comes from}: the denoiser learns a local descent direction that
-transfers across the space, while the value baseline must propagate a global
-scalar outward from the goal. Conversely (b) and (c) are hard boundaries
-with identified mechanisms (deadlock-blindness; wrong-game marginals), not
-tuning problems.
-
-\textbf{Hybrids.} The failures suggest their own fixes, which we leave to
-future work: mixing a fraction of \emph{forward} experience into training
-(to expose deadlocks), denoiser-proposes/value-scores combinations
-(Sokoban, and solution-length polishing generally), and stochastic-aware
-reverse processes that marginalize over exogenous noise (2048).
-
-\textbf{Limitations.} Single seed per configuration; one hardware platform;
-modest network sizes (1.7M--16M parameters); heuristic rather than learned
-baselines for 2048; Sokoban instances from one generator family (8$\times$8,
-3 boxes); and our value baselines are greedy/1-step solvers---stronger
-search at evaluation time would raise both methods.
+\textbf{Limitations.} Three seeds per configuration (single seed for the
+24-puzzle, where the gap is 166$\times$); one hardware platform; MLP
+backbones only; greedy/1-step solvers at evaluation (stronger search lifts
+both methods); Sokoban and Peg Solitaire instances from one generator
+family; 2048 baselines are heuristic rather than learned.
 
 \section{Reproducibility}
+Ten vectorized pure-PyTorch environments, each with a validation gate that
+reproduces a known exact quantity (state counts, diameters, GF(2) null-space
+dimension, reverse-step exactness, replay identities). Machine-readable
+results in \texttt{paper2\_data/}; every trainer, evaluator, and figure
+script at \url{https://github.com/aamirkhani/rubiks-diffusion}. Total
+compute: ${\sim}35$ GPU-hours on one RTX 5080 laptop.
 
-All five environments are pure-PyTorch and vectorized (10k--200k instances
-per batch on one laptop GPU); every domain ships its trainer, evaluator, and
-a validation gate that reproduces a known exact quantity (8-puzzle:
-181{,}440 states, diameter 31; mazes: BFS field equals Manhattan distance on
-empty grids; Sokoban: pull-walks replay to solved under pushes; pendulum:
-reverse step inverts forward step to $10^{-6}$; 2048: tile-mass
-conservation). Per-domain results are machine-readable JSON in
-\texttt{paper2\_data/}. Code:
-\url{https://github.com/aamirkhani/rubiks-diffusion}. Total compute for
-this study: $\sim$9 GPU-hours.
-
-\begin{thebibliography}{9}
+\bibliographystyle{plainnat}
+\begin{thebibliography}{12}
 
 \bibitem[Agostinelli et~al.(2019)]{agostinelli2019}
 F.~Agostinelli, S.~McAleer, A.~Shmakov, and P.~Baldi.
 \newblock Solving the {R}ubik's cube with deep reinforcement learning and search.
 \newblock \emph{Nature Machine Intelligence}, 1(8):356--363, 2019.
+
+\bibitem[Andrychowicz et~al.(2017)]{her2017}
+M.~Andrychowicz et~al.
+\newblock Hindsight experience replay.
+\newblock In \emph{NeurIPS}, 2017.
 
 \bibitem[Austin et~al.(2021)]{austin2021}
 J.~Austin, D.~D. Johnson, J.~Ho, D.~Tarlow, and R.~van~den Berg.
@@ -308,16 +352,31 @@ J.~Ho, A.~Jain, and P.~Abbeel.
 \newblock Denoising diffusion probabilistic models.
 \newblock In \emph{NeurIPS}, 2020.
 
+\bibitem[Janner et~al.(2022)]{janner2022}
+M.~Janner, Y.~Du, J.~Tenenbaum, and S.~Levine.
+\newblock Planning with diffusion for flexible behavior synthesis.
+\newblock In \emph{ICML}, 2022.
+
 \bibitem[Khani(2026)]{khani2026}
 A.~Khani.
 \newblock Scramble inversion as discrete denoising diffusion: A
 matched-compute study on the {R}ubik's cube group.
 \newblock Preprint, 2026.
 
+\bibitem[Resnick et~al.(2018)]{resnick2018}
+C.~Resnick, R.~Raileanu, S.~Kapoor, A.~Peysakhovich, K.~Cho, and J.~Bruna.
+\newblock Backplay: ``{M}an muss immer umkehren''.
+\newblock arXiv:1807.06919, 2018.
+
 \bibitem[Sohl-Dickstein et~al.(2015)]{sohldickstein2015}
 J.~Sohl-Dickstein, E.~Weiss, N.~Maheswaranathan, and S.~Ganguli.
 \newblock Deep unsupervised learning using nonequilibrium thermodynamics.
 \newblock In \emph{ICML}, 2015.
+
+\bibitem[Sun and Yang(2023)]{sun2023}
+Z.~Sun and Y.~Yang.
+\newblock {DIFUSCO}: Graph-based diffusion solvers for combinatorial optimization.
+\newblock In \emph{NeurIPS}, 2023.
 
 \bibitem[Takano(2023)]{takano2023}
 K.~Takano.
@@ -325,5 +384,42 @@ K.~Takano.
 \newblock \emph{Transactions on Machine Learning Research}, 2023.
 
 \end{thebibliography}
+
+\appendix
+
+\section{Hyperparameters}
+\begin{table}[h]
+\centering
+\scriptsize
+\begin{tabular}{lccccccc}
+\toprule
+Domain & $S$ & $|V|$ & $M$ & $h_1/h_2/$blocks & batch & iters & $K$ \\
+\midrule
+24-puzzle & 25 & 25 & 4 & 5000/1000/4 & 10k & 62k & 300 \\
+8-puzzle & 9 & 9 & 4 & 1024/512/2 & 10k & 20k & 31 \\
+maze / POMDP & 225 & 4 / 5 & 4 & 2048/1024/3 & 8192 & 60k & 60 \\
+Sokoban & 64 & 7 & 4 & 2048/1024/3 & 8192 & 80k & 40 \\
+pendulum & 3 feats & --- & 21 bins & 256$\times$3 SiLU & 8192 & 30k & 200 \\
+2048 & 16 & 12 & 4 & 2048/1024/3 & 8192 & 40k & 40 \\
+Hanoi & 10 & 3 & 6 & 1024/512/2 & 8192 & 20k & 1200 \\
+Lights Out & 25 & 2 & 25 & 2048/1024/3 & 8192 & 20k & 25 \\
+Mountain Car & 3 feats & --- & 3 & 256$\times$3 SiLU & 8192 & 20k & 250 \\
+Peg Solitaire & 49 & 3 & 196 & 2048/1024/3 & 4096 & 30k & 31 \\
+\bottomrule
+\end{tabular}
+\caption{Per-domain configuration. Optimizer Adam ($10^{-3}$, $\times0.1$ at
+$80\%$), bf16 autocast throughout; DAVI target-net sync at loss $<0.05$ or
+staleness cap. Value baselines share every setting.}
+\end{table}
+
+\section{Validation gates}
+Each environment must reproduce a known exact quantity before training:
+8-puzzle BFS $= 181{,}440$ states, diameter 31; Hanoi BFS $= 3^{10}$ states,
+goal eccentricity $2^{10}{-}1 = 1023$; Lights Out GF(2) null space of
+dimension 2; maze BFS field $=$ Manhattan distance on empty grids; Sokoban
+and Peg Solitaire reverse walks replay to the goal under forward dynamics;
+pendulum and Mountain Car reverse steps invert forward steps to
+${<}10^{-6}$; 2048 slides conserve tile mass; 24-puzzle scrambles preserve
+permutation parity by construction.
 
 \end{document}

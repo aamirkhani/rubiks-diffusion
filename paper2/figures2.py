@@ -153,7 +153,7 @@ def fig_domains_strip():
     from domains.hanoi import HanoiEnv
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    fig, axes = plt.subplots(1, 7, figsize=(7.0, 1.35))
+    fig, axes = plt.subplots(1, 10, figsize=(7.0, 1.05))
 
     def grid_ax(ax, title):
         ax.set_xticks([]); ax.set_yticks([])
@@ -242,6 +242,128 @@ def fig_domains_strip():
     ax.imshow(obs, cmap="Greys", vmin=0, vmax=4)
     grid_ax(ax, "POMDP maze\n(partial obs)")
 
-    fig.tight_layout(w_pad=0.6)
+
+    # 8: lights out
+    from domains.lightsout import LightsOutEnv
+    envl = LightsOutEnv(dev)
+    stl = envl.scramble(1, 12, generator=torch.Generator(device=dev).manual_seed(4))
+    ax = axes[7]
+    ax.imshow(stl[0].reshape(5, 5).cpu().numpy(), cmap="YlOrBr", vmin=0, vmax=1.4)
+    grid_ax(ax, "Lights Out\n(commutative)")
+
+    # 9: mountain car
+    ax = axes[8]
+    xsr = np.linspace(-1.2, 0.6, 80)
+    ax.plot(xsr, np.sin(3 * xsr) * 0.45, color=GRAY, lw=1.0)
+    ax.plot([-0.5], [np.sin(-1.5) * 0.45 + 0.05], "o", ms=5, color=BLUE)
+    ax.set_xlim(-1.3, 0.7); ax.set_ylim(-0.7, 0.7)
+    grid_ax(ax, "Mountain Car\n(non-monotone)")
+
+    # 10: peg solitaire
+    from domains.pegsolitaire import PegEnv
+    envpg = PegEnv(dev)
+    stp, _ = envpg.scramble(1, 18, return_actions=True,
+                            generator=torch.Generator(device=dev).manual_seed(6))
+    img = stp[0].reshape(7, 7).cpu().numpy().astype(float)
+    img[img == 2] = np.nan
+    cmp_ = plt.get_cmap("Oranges").copy(); cmp_.set_bad("#efece6")
+    ax = axes[9]
+    ax.imshow(img, cmap=cmp_, vmin=-0.4, vmax=1.4)
+    grid_ax(ax, "Peg Solitaire\n(non-conserv.)")
+
+    fig.tight_layout(w_pad=0.5)
     fig.savefig(os.path.join(HERE, "fig2_domains.pdf"), bbox_inches="tight")
     print("fig2_domains.pdf")
+
+
+def fig_architecture2():
+    """One recipe, ten domains: per-domain encodings -> shared residual MLP
+    -> denoiser head (M_d logits) or value head (scalar). Real logits from
+    the trained Sokoban denoiser as the worked example."""
+    import sys
+    sys.path.insert(0, ROOT)
+    import torch
+    import torch.nn.functional as Fn
+    from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+    INK, MUT = "#1a1a19", "#6b6a66"
+
+    doms = [("Rubik 3x3", 54, 6, 12), ("24-puzzle", 25, 25, 4),
+            ("maze", 225, 4, 4), ("Sokoban", 64, 7, 4),
+            ("pendulum", "3 feats", "-", 21), ("2048", 16, 12, 4),
+            ("Hanoi", 10, 3, 6), ("POMDP maze", 225, 5, 4),
+            ("Lights Out", 25, 2, 25), ("Mountain Car", "3 feats", "-", 3),
+            ("Peg Solitaire", 49, 3, 196)]
+
+    fig = plt.figure(figsize=(7.0, 3.4))
+    ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    # left: domain chips
+    ax.text(0.13, 0.985, "one-hot state encodings", ha="center", fontsize=8,
+            color=INK, weight="bold")
+    for i, (name, S_, V_, M_) in enumerate(doms):
+        y = 0.93 - i * 0.077
+        ax.add_patch(FancyBboxPatch((0.015, y - 0.030), 0.225, 0.060,
+                                    boxstyle="round,pad=0.008",
+                                    fc="#f0efec", ec="#c9c5bd", lw=0.7))
+        ax.text(0.03, y, name, fontsize=6.8, va="center", color=INK)
+        ax.text(0.235, y, f"S={S_}, |V|={V_}", fontsize=5.8, va="center",
+                ha="right", color=MUT)
+        ax.annotate("", xy=(0.30, 0.5), xytext=(0.245, y),
+                    arrowprops=dict(arrowstyle="-", lw=0.5, color="#cfc9c0",
+                                    connectionstyle="arc3,rad=0.12"))
+
+    def box(x, y, w, h, t, sub=None, fc="#f0efec"):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.010",
+                                    fc=fc, ec=INK, lw=1.0))
+        ax.text(x + w / 2, y + h / 2 + (0.03 if sub else 0), t, ha="center",
+                va="center", fontsize=8, color=INK)
+        if sub:
+            ax.text(x + w / 2, y + h / 2 - 0.045, sub, ha="center",
+                    va="center", fontsize=6.4, color=MUT)
+
+    box(0.305, 0.30, 0.115, 0.40, "Linear $h_1$", "LayerNorm+ReLU")
+    box(0.445, 0.30, 0.115, 0.40, "Linear $h_2$", "LayerNorm+ReLU")
+    box(0.585, 0.30, 0.135, 0.40, "ResBlock $h_2$", "$\\times$2--4")
+    ax.annotate("", xy=(0.700, 0.78), xytext=(0.598, 0.78),
+                arrowprops=dict(arrowstyle="-|>", lw=0.8, color=MUT,
+                                connectionstyle="arc3,rad=-0.4"))
+    ax.text(0.65, 0.85, "skip", fontsize=6, color=MUT, ha="center")
+    for x1, x2 in ((0.421, 0.443), (0.561, 0.583)):
+        ax.annotate("", xy=(x2, 0.5), xytext=(x1, 0.5),
+                    arrowprops=dict(arrowstyle="-|>", lw=1.0, color=INK))
+    ax.annotate("", xy=(0.76, 0.62), xytext=(0.722, 0.55),
+                arrowprops=dict(arrowstyle="-|>", lw=1.3, color=ORANGE))
+    ax.annotate("", xy=(0.76, 0.33), xytext=(0.722, 0.44),
+                arrowprops=dict(arrowstyle="-|>", lw=1.3, color=BLUE))
+
+    # denoiser head with real Sokoban logits
+    try:
+        from domains.eval_sokoban import load
+        env, pnet, _ = load(os.path.join(ROOT, "runs/soko_diff/ckpt_latest.pt"))
+        g = torch.Generator(device="cuda").manual_seed(1)
+        w, go, b, a_, lab = env.instances_and_scramble(1, 12, generator=g)
+        st = env.render(w, go, b, a_)
+        with torch.no_grad():
+            pr = Fn.softmax(pnet(st)[0].float(), 0).cpu().numpy()
+        axb = fig.add_axes([0.79, 0.56, 0.185, 0.30])
+        cols = [ORANGE if i == int(pr.argmax()) else "#e2c4b4"
+                for i in range(4)]
+        axb.bar(["U", "D", "L", "R"], pr, color=cols, width=0.6)
+        axb.set_yticks([])
+        for s_ in axb.spines.values():
+            s_.set_visible(False)
+        axb.set_title("denoiser head: $p_\\theta(a|s)$\n(real Sokoban pass)",
+                      fontsize=7, color=INK)
+        axb.tick_params(labelsize=7, colors=INK)
+    except Exception as e:
+        print("arch head err:", e)
+    box(0.79, 0.20, 0.185, 0.16, "value head: $V_\\theta(s)$",
+        "scalar cost-to-go", fc="#e3edf9")
+    ax.text(0.5, 0.012, "identical backbone across all domains and both "
+            "objectives — only input width, head, and loss change",
+            ha="center", fontsize=7.4, color=MUT, style="italic")
+    for ext in ("pdf", "png"):
+        fig.savefig(os.path.join(HERE, f"fig2_architecture.{ext}"),
+                    bbox_inches="tight", dpi=170)
+    print("fig2_architecture.pdf")

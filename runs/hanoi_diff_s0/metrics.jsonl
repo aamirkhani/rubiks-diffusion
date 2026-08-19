@@ -18,3 +18,10 @@
 {"iter": 8500, "ema": 1.0952, "tgt_updates": 0}
 {"iter": 9000, "ema": 1.0952, "tgt_updates": 0}
 {"iter": 9500, "ema": 1.0951, "tgt_updates": 0}
+{"iter": 10000, "ema": 1.0948, "tgt_updates": 0}
+{"iter": 10000, "probe": {"100": 0.8594, "300": 0.834, "600": 0.8125, "1200": 0.748}}
+{"iter": 10500, "ema": 1.0951, "tgt_updates": 0}
+{"iter": 11000, "ema": 1.095, "tgt_updates": 0}
+{"iter": 11500, "ema": 1.095, "tgt_updates": 0}
+{"iter": 12000, "ema": 1.0949, "tgt_updates": 0}
+{"iter": 12500, "ema": 1.0951, "tgt_updates": 0}
