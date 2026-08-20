@@ -7,3 +7,6 @@ nohup.out
 paper/scramble-inversion-diffusion.aux
 paper/scramble-inversion-diffusion.log
 paper/scramble-inversion-diffusion.out
+*.aux
+*.out
+paper2/*.log
