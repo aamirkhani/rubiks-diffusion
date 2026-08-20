@@ -61,3 +61,102 @@ I would **not** keep the current title. While it is accurate and memorable for t
 
 **Final recommendation:**  
 **Change the title to "A Systematic Empirical Map of Denoising Diffusion in Sequential Decision Problems".** This best balances searchability, accuracy, and memorability, and is well-suited for reviewers and the broader community.
+
+---
+
+# Round 2: GPT-4.1 ranking of full candidate pool (2026-08-20)
+
+Absolutely! Here’s a detailed, area-chair-style answer for your title selection and improvement process.
+
+---
+
+## 1. Top 5 Titles Ranked (with rationale)
+
+**1. B1. "When Is an RL Problem a Diffusion Problem? A Ten-Domain Empirical Map"**  
+- **Reason:**  
+  - Directly poses the central question in natural language for searchability and curiosity (“When is...?”).  
+  - "Empirical map" and "ten-domain" accurately reflect the systematic, negative-results focus.  
+  - Length is good; memorable, and closely matches the abstract and figures’ narrative.
+
+**2. C0. "Scramble Inversion Beyond Groups: A Ten-Domain Map of Where Denoising Diffusion Solves Sequential Decision Problems"**  
+- **Reason:**  
+  - Precise, search-friendly, and descriptive for the technical audience.  
+  - "Map" fits the paper’s organizing metaphor and structure.  
+  - Slightly long, but contains all keywords for accuracy.
+
+**3. A3. "When Does Denoising Diffusion Solve RL? A Ten-Domain Study Beyond Group Structure"**  
+- **Reason:**  
+  - Short, question-based, and highly searchable (“When does...?”).  
+  - "Ten-domain study" and "beyond group structure" are informative.  
+  - Slightly less explicit about negative results than B1.
+
+**4. B4. "An Assumption Ladder for Diffusion-Based Planning: Ten Domains, Two Failure Modes, One Hard Boundary"**  
+- **Reason:**  
+  - Very coherent with the paper's internal framing ("assumption ladder").  
+  - Lists main findings (failure modes, boundary) clearly.  
+  - A bit long, but memorable and differentiates the paper.
+
+**5. B5. "Charting the Limits of Scramble Inversion: From the Rubik's Cube to Ten Ways It Can Fail"**  
+- **Reason:**  
+  - Highlights negative results ("limits", "fail"), which is appropriate.  
+  - "Charting" and "from...to..." structure are memorable and narrative-driven.  
+  - Slightly informal, but engaging.
+
+**Brief notes on others:**  
+- B6 (“Field Guide...”) is catchy but less specific.  
+- B10 (“Diffusion Solves Puzzles, Not Dice...”) is memorable but less formal and less searchable.  
+- B7, B8, B9 are more poetic but less direct for a systematic empirical paper.
+
+---
+
+## 2. Three New Title Suggestions
+
+**N1. "Mapping the Boundaries of Diffusion in Sequential Decision Problems: Ten Domains, Three Mechanisms, One Hard Limit"**  
+- **Reason:**  
+  - Explicitly promises a map, boundaries, mechanisms, and a limit: aligns with the abstract’s arc and is highly search-friendly.
+
+**N2. "Scramble Inversion Across the Assumption Ladder: Systematic Negative Results Beyond Rubik’s Cube"**  
+- **Reason:**  
+  - Marries the paper’s own language (“assumption ladder”) with “systematic negative results,” clarifying contribution and scope.
+
+**N3. "Empirical Limits of Denoising Diffusion Planning: A Ten-Domain Ladder of Failures and Successes"**  
+- **Reason:**  
+  - Searchable, highlights empirical/negative focus, and references both failures and successes in a structured way.
+
+---
+
+## 3. Final Recommendation
+
+**Recommended Title:**  
+**B1. "When Is an RL Problem a Diffusion Problem? A Ten-Domain Empirical Map"**
+
+**Rationale:**  
+- **Searchability:** Poses the central question in the language the community will use; “RL,” “Diffusion Problem,” “Empirical Map” are all top search terms.
+- **Accuracy:** Accurately describes the scope (ten domains), method (empirical), and the negative-result nature (not “that”, but “when”).
+- **Memorability:** The question format is catchy and easy to recall.
+- **Length:** Concise but complete.
+- **Cohesion:** Directly ties to the “map” and “assumption ladder” metaphors in the paper, and signals both the empirical rigor and generalization focus.
+
+**If a running header is needed (≤55 characters):**  
+**Running Header:**  
+*"When Is RL a Diffusion Problem? A Ten-Domain Map"*
+
+---
+
+**Summary Table:**
+
+| Rank | Title                                                                                                   | Rationale (1 line)                                                        |
+|------|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| 1    | When Is an RL Problem a Diffusion Problem? A Ten-Domain Empirical Map                                   | Poses the core question, clear, concise, and connects to paper’s theme.    |
+| 2    | Scramble Inversion Beyond Groups: A Ten-Domain Map of Where Denoising Diffusion Solves Sequential...    | Complete, accurate, and technical — fits the “map” metaphor.               |
+| 3    | When Does Denoising Diffusion Solve RL? A Ten-Domain Study Beyond Group Structure                       | Short, natural-language, and highly searchable.                            |
+| 4    | An Assumption Ladder for Diffusion-Based Planning: Ten Domains, Two Failure Modes, One Hard Boundary    | Matches the internal language and lists main findings clearly.              |
+| 5    | Charting the Limits of Scramble Inversion: From the Rubik’s Cube to Ten Ways It Can Fail                | Negative results foregrounded, memorable, and narrative-driven.             |
+
+**Three new titles are given above, each with rationale.**
+
+---
+
+**Final pick:**  
+**B1. "When Is an RL Problem a Diffusion Problem? A Ten-Domain Empirical Map"**  
+**Short header:** *"When Is RL a Diffusion Problem? A Ten-Domain Map"*
