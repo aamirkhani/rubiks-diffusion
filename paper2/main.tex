@@ -60,7 +60,12 @@ zero-training hybrid---denoiser proposes, value function vetoes---not only
 repairs but turns into the best solver ($\sokoHY$); and with continuous
 actions, naive $\epsilon$-regression collapses to a useless posterior mean
 ($\pendMSE$ swing-up) while the same data with a distributional head reaches
-$\pendDISC$. It has one hard boundary: stochastic dynamics (2048), where the
+$\pendDISC$. Extreme horizon (Hanoi) exposes a third, diffusion-native failure shared by
+both methods: non-backtracking noising walks never mix across the 1023-move
+diameter (1200-step walks stay within distance 125), and each method is
+near-perfect inside the covered shells and zero beyond---the schedule, not
+the learner, is the ceiling. Finally there is one hard boundary: stochastic
+dynamics (2048), where the
 deterministic reverse process describes a game that is never played and the
 denoiser performs at random-play level. We conclude with a practitioner's
 checklist and release all ten environments, trainers, and logs.
@@ -106,7 +111,7 @@ sequence is re-executed in the environment.
 3 & Sokoban & invertibility & value wins ($\sokoDN$ vs $\sokoDV$); \textbf{hybrid $\sokoHY$} & \cond \\
 4 & pendulum & discreteness & $\pendMSE \to \pendDISC$ with distributional head & \cond \\
 5 & 2048 & determinism & denoiser $=$ random ($\gDN$ vs $\gRAND$) & \no \\
-6 & Hanoi & bounded horizon & $\hanoiDN$ vs $\hanoiDV$ (all 59{,}049 states) & \yes \\
+6 & Hanoi & bounded horizon & both ${\sim}2\%$ uniform; $100\%$ inside covered shell & \no \\
 7 & POMDP maze & full observability & $\pomdpDN$ vs $\pomdpDV$ & \yes \\
 8 & Lights Out & ordered solutions & $\loDN$ vs $\loDV$ & \yes \\
 9 & Mountain Car & monotone progress & $\mcDN$ vs $\mcVAL$ & \yes \\
@@ -197,12 +202,20 @@ puzzles calibrate the claim: on the exhaustible 8-puzzle both methods solve
 $100\%$ of all 181{,}440 states (3-seed greedy: denoiser \slideEightAgg{},
 DAVI \slideEightAggDV{}) and DAVI is nearly move-optimal
 ($\slideEightDVmq$ of its moves reduce true distance vs.\
-$\slideEightDNmq$)---in small spaces value learning is the sharper tool. On
-Hanoi, whose 59{,}049 states we also sweep exhaustively but whose solutions
-run to 1023 moves, the denoiser attains \hanoiDN{} versus DAVI's
-\hanoiDV{}: extreme horizon with a tiny state space behaves like the
-8-puzzle, not the 24-puzzle---it is \emph{state-space scale}, not solution
-length, that separates the methods.
+$\slideEightDNmq$)---in small spaces value learning is the sharper tool. Hanoi
+delivers the study's sharpest lesson about the \emph{schedule}. Walk-based
+probes report ${\ge}99\%$ for both methods---but the exhaustive sweep over
+all 59{,}049 states reports ${\sim}2\%$ for both (\hanoiDN{} /
+\hanoiDV{}). The discrepancy is the noising process itself:
+non-backtracking walks do not mix on Hanoi's Sierpinski-structured graph, and
+1200-step walks reach states of mean true distance just 36 (never beyond
+125) of the 1023-move diameter. Stratifying the sweep by exact distance
+resolves the picture: the denoiser solves $100\%$ of states within distance
+50 and $96\%$ within 51--100---precisely the covered shells---and $0\%$
+beyond 200. Neither horizon nor the objective is the boundary; \emph{schedule
+coverage} is, taken to the extreme predicted by the shell-coverage analysis
+of the companion paper. Any fix must repair the forward process (e.g.,
+trajectory stratification or explicit deep-state seeding), not the learner.
 
 \begin{figure}[t]
 \centering
@@ -300,9 +313,13 @@ for the value-veto hybrid, which in our experiments is strictly the best
 policy (Sokoban: $\sokoHY$).
 \item \textbf{Are actions continuous?} Keep the distribution: discretize or
 sample; never regress the mean.
-\item Conditioning, partial observability, unordered solutions, extreme
-horizons, and non-monotone progress required \emph{no} adaptation in our
-experiments.
+\item \textbf{Do your noising walks actually reach the states you must
+solve?} Measure it (an oracle or proxy distance suffices): on Hanoi,
+1200-step walks cover ${\le}12\%$ of the diameter and the learned policy is
+perfect inside that shell and useless outside it. Schedule coverage, not
+capacity, sets the ceiling.
+\item Conditioning, partial observability, unordered solutions, and
+non-monotone progress required \emph{no} adaptation in our experiments.
 \end{enumerate}
 
 \textbf{Limitations.} Three seeds per configuration (single seed for the
