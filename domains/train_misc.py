@@ -27,13 +27,11 @@ def get_env(domain, device):
 
 @torch.no_grad()
 def all_successors(env, states):
-    """[B, M, S] successor states via env.step per action (chunked over M)."""
+    """[B, M, S] successors in ONE batched step call (tile batch over actions)."""
     B = states.shape[0]
-    outs = []
-    for a in range(env.M):
-        aa = torch.full((B,), a, dtype=torch.long, device=states.device)
-        outs.append(env.step(states, aa))
-    return torch.stack(outs, 1)
+    rep = states.repeat_interleave(env.M, 0)
+    acts = torch.arange(env.M, device=states.device).repeat(B)
+    return env.step(rep, acts).view(B, env.M, env.S)
 
 
 @torch.no_grad()
@@ -62,7 +60,11 @@ def rollout(env, net, method, states, max_steps, forbid_repeat=False):
                 a = net(sub).float().masked_fill(~legal, -1e9).argmax(1)
             else:
                 nb = all_successors(env, sub)
-                v = net(nb.reshape(-1, env.S)).float().view(-1, env.M)
+                flat2 = nb.reshape(-1, env.S)
+                vs2 = []
+                for i0 in range(0, flat2.shape[0], 131072):
+                    vs2.append(net(flat2[i0:i0 + 131072]).float())
+                v = torch.cat(vs2).view(-1, env.M)
                 v = torch.where(env.is_solved(nb.reshape(-1, env.S))
                                 .view(-1, env.M), torch.zeros_like(v),
                                 v.clamp_min(0))
@@ -87,7 +89,7 @@ def verify(env, start, actions):
     return env.is_solved(s)
 
 
-def train(domain, method, iters, out_dir, batch=None, lr=1e-3, device="cuda"):
+def train(domain, method, iters, out_dir, batch=None, lr=1e-3, device="cuda", resume=None):
     os.makedirs(out_dir, exist_ok=True)
     env = get_env(domain, device)
     K = 25 if domain == "lightsout" else 31
@@ -103,6 +105,14 @@ def train(domain, method, iters, out_dir, batch=None, lr=1e-3, device="cuda"):
         for p in target.parameters():
             p.requires_grad_(False)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
+    start_iter = 0
+    if resume and os.path.exists(resume):
+        ck = torch.load(resume, map_location=device, weights_only=True)
+        net.load_state_dict(ck["net"])
+        start_iter = ck["iter"]
+        if method == "davi":
+            target.load_state_dict(ck["net"])
+        print(f"resumed at {start_iter}", flush=True)
     mfh = open(os.path.join(out_dir, "metrics.jsonl"), "a", buffering=1)
     print(f"{method} {domain}: "
           f"{sum(p.numel() for p in net.parameters())/1e6:.1f}M params",
@@ -128,7 +138,7 @@ def train(domain, method, iters, out_dir, batch=None, lr=1e-3, device="cuda"):
 
     ema, stale, tgt_updates = None, 0, 0
     net.train()
-    for it in range(1, iters + 1):
+    for it in range(start_iter + 1, iters + 1):
         if it == int(iters * 0.8) + 1:
             for g in opt.param_groups:
                 g["lr"] = lr * 0.1
@@ -143,7 +153,11 @@ def train(domain, method, iters, out_dir, batch=None, lr=1e-3, device="cuda"):
         else:
             with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
                 nb = all_successors(env, states)
-                v = target(nb.reshape(-1, env.S)).float().view(batch, env.M)
+                flat = nb.reshape(-1, env.S)
+                vs = []
+                for i0 in range(0, flat.shape[0], 131072):
+                    vs.append(target(flat[i0:i0 + 131072]).float())
+                v = torch.cat(vs).view(batch, env.M)
                 v = torch.where(env.is_solved(nb.reshape(-1, env.S))
                                 .view(batch, env.M), torch.zeros_like(v),
                                 v.clamp_min(0))
@@ -194,6 +208,7 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int, required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--resume")
     args = ap.parse_args()
     torch.manual_seed(args.seed)
-    train(args.domain, args.method, args.iters, args.out)
+    train(args.domain, args.method, args.iters, args.out, resume=args.resume)

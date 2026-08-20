@@ -1,0 +1,44 @@
+{"iter": 500, "ema": 0.0084, "tgt_updates": 4}
+{"iter": 1000, "ema": 0.0046, "tgt_updates": 9}
+{"iter": 1500, "ema": 0.0032, "tgt_updates": 14}
+{"iter": 2000, "ema": 0.0038, "tgt_updates": 19}
+{"iter": 2500, "ema": 0.0026, "tgt_updates": 24}
+{"iter": 3000, "ema": 0.0029, "tgt_updates": 29}
+{"iter": 3500, "ema": 0.002, "tgt_updates": 34}
+{"iter": 4000, "ema": 0.002, "tgt_updates": 39}
+{"iter": 4500, "ema": 0.002, "tgt_updates": 44}
+{"iter": 5000, "ema": 0.0027, "tgt_updates": 49}
+{"iter": 5000, "probe": {"100": 1.0, "300": 0.9824, "600": 0.9043, "1200": 0.7188}}
+{"iter": 5500, "ema": 0.0014, "tgt_updates": 54}
+{"iter": 6000, "ema": 0.0011, "tgt_updates": 59}
+{"iter": 6500, "ema": 0.0042, "tgt_updates": 64}
+{"iter": 7000, "ema": 0.0079, "tgt_updates": 69}
+{"iter": 7500, "ema": 0.0057, "tgt_updates": 74}
+{"iter": 8000, "ema": 0.0026, "tgt_updates": 79}
+{"iter": 8500, "ema": 0.0053, "tgt_updates": 84}
+{"iter": 9000, "ema": 0.0004, "tgt_updates": 89}
+{"iter": 9500, "ema": 0.0004, "tgt_updates": 94}
+{"iter": 10000, "ema": 0.0003, "tgt_updates": 99}
+{"iter": 10000, "probe": {"100": 1.0, "300": 1.0, "600": 0.9941, "1200": 0.9297}}
+{"iter": 10500, "ema": 0.0011, "tgt_updates": 104}
+{"iter": 11000, "ema": 0.0004, "tgt_updates": 109}
+{"iter": 11500, "ema": 0.0007, "tgt_updates": 114}
+{"iter": 12000, "ema": 0.0121, "tgt_updates": 119}
+{"iter": 12500, "ema": 0.0011, "tgt_updates": 124}
+{"iter": 13000, "ema": 0.0014, "tgt_updates": 129}
+{"iter": 13500, "ema": 0.0017, "tgt_updates": 134}
+{"iter": 14000, "ema": 0.0008, "tgt_updates": 139}
+{"iter": 14500, "ema": 0.0012, "tgt_updates": 144}
+{"iter": 15000, "ema": 0.0043, "tgt_updates": 149}
+{"iter": 15000, "probe": {"100": 1.0, "300": 1.0, "600": 1.0, "1200": 0.9707}}
+{"iter": 15500, "ema": 0.0009, "tgt_updates": 154}
+{"iter": 16000, "ema": 0.0028, "tgt_updates": 159}
+{"iter": 16500, "ema": 0.0008, "tgt_updates": 164}
+{"iter": 17000, "ema": 0.001, "tgt_updates": 169}
+{"iter": 17500, "ema": 0.0009, "tgt_updates": 174}
+{"iter": 18000, "ema": 0.0008, "tgt_updates": 179}
+{"iter": 18500, "ema": 0.0004, "tgt_updates": 184}
+{"iter": 19000, "ema": 0.0004, "tgt_updates": 189}
+{"iter": 19500, "ema": 0.0005, "tgt_updates": 194}
+{"iter": 20000, "ema": 0.0004, "tgt_updates": 199}
+{"iter": 20000, "probe": {"100": 1.0, "300": 1.0, "600": 0.998, "1200": 0.9883}}

@@ -1,0 +1,312 @@
+{
+  "slide3": {
+    "denoise": {
+      "greedy_all_states": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 1,
+        "per_seed": [
+          1.0
+        ]
+      },
+      "avg_len": {
+        "mean": 22.96,
+        "min": 22.96,
+        "max": 22.96,
+        "n_seeds": 1,
+        "per_seed": [
+          22.96
+        ]
+      }
+    },
+    "davi": {
+      "greedy_all_states": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 1,
+        "per_seed": [
+          1.0
+        ]
+      },
+      "avg_len": {
+        "mean": 21.99,
+        "min": 21.99,
+        "max": 21.99,
+        "n_seeds": 1,
+        "per_seed": [
+          21.99
+        ]
+      }
+    }
+  },
+  "maze": {
+    "denoise": {
+      "solve_rate": {
+        "mean": 0.7597,
+        "min": 0.7597,
+        "max": 0.7597,
+        "n_seeds": 1,
+        "per_seed": [
+          0.7597
+        ]
+      }
+    },
+    "davi": {
+      "solve_rate": {
+        "mean": 0.7656,
+        "min": 0.7656,
+        "max": 0.7656,
+        "n_seeds": 1,
+        "per_seed": [
+          0.7656
+        ]
+      }
+    }
+  },
+  "pomdp_maze": {
+    "denoise": {
+      "solve_rate": {
+        "mean": 0.8462,
+        "min": 0.8332,
+        "max": 0.8528,
+        "n_seeds": 3,
+        "per_seed": [
+          0.8527,
+          0.8528,
+          0.8332
+        ]
+      }
+    },
+    "davi": {
+      "solve_rate": {
+        "mean": 0.8625,
+        "min": 0.8587,
+        "max": 0.8689,
+        "n_seeds": 3,
+        "per_seed": [
+          0.8689,
+          0.8587,
+          0.8598
+        ]
+      }
+    }
+  },
+  "sokoban": {
+    "denoise": {
+      "solve_rate_depth60": {
+        "mean": 0.6546,
+        "min": 0.6546,
+        "max": 0.6546,
+        "n_seeds": 1,
+        "per_seed": [
+          0.6546
+        ]
+      }
+    },
+    "davi": {
+      "solve_rate_depth60": {
+        "mean": 0.831,
+        "min": 0.831,
+        "max": 0.831,
+        "n_seeds": 1,
+        "per_seed": [
+          0.831
+        ]
+      }
+    }
+  },
+  "pendulum": {
+    "denoise_mse": {
+      "swingup_rate": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "n_seeds": 1,
+        "per_seed": [
+          0.0
+        ]
+      }
+    },
+    "denoise_disc": {
+      "swingup_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 1,
+        "per_seed": [
+          1.0
+        ]
+      }
+    },
+    "value": {
+      "swingup_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 1,
+        "per_seed": [
+          1.0
+        ]
+      }
+    }
+  },
+  "g2048": {
+    "denoiser_reach256": {
+      "mean": 0.0708,
+      "min": 0.0708,
+      "max": 0.0708,
+      "n_seeds": 1,
+      "per_seed": [
+        0.0708
+      ]
+    },
+    "random_reach256": 0.0718,
+    "greedy_merge_reach256": 0.6182
+  },
+  "hanoi": {
+    "denoise": {
+      "greedy_all_states": {
+        "mean": 0.0204,
+        "min": 0.0198,
+        "max": 0.0213,
+        "n_seeds": 3,
+        "per_seed": [
+          0.0213,
+          0.0198,
+          0.0201
+        ]
+      },
+      "classic_start_len": [
+        null,
+        null,
+        null
+      ]
+    },
+    "davi": {
+      "greedy_all_states": {
+        "mean": 0.0169,
+        "min": 0.0136,
+        "max": 0.0203,
+        "n_seeds": 3,
+        "per_seed": [
+          0.0203,
+          0.0136,
+          0.0168
+        ]
+      },
+      "classic_start_len": [
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "lightsout": {
+    "denoise": {
+      "solve_rate": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 3,
+        "per_seed": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "len_over_optimal": {
+        "mean": 1.0526,
+        "min": 1.0413,
+        "max": 1.0644,
+        "n_seeds": 3,
+        "per_seed": [
+          1.0644,
+          1.0413,
+          1.0521
+        ]
+      }
+    },
+    "davi": {
+      "solve_rate": {
+        "mean": 0.3385,
+        "min": 0.3378,
+        "max": 0.34,
+        "n_seeds": 3,
+        "per_seed": [
+          0.3378,
+          0.34,
+          0.3378
+        ]
+      },
+      "len_over_optimal": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0,
+        "n_seeds": 3,
+        "per_seed": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "mountaincar": {
+    "denoise": {
+      "reach_rate": {
+        "mean": 0.9579,
+        "min": 0.9219,
+        "max": 0.99,
+        "n_seeds": 3,
+        "per_seed": [
+          0.99,
+          0.9619,
+          0.9219
+        ]
+      }
+    },
+    "value": {
+      "reach_rate": {
+        "mean": 0.4181,
+        "min": 0.0,
+        "max": 0.6597,
+        "n_seeds": 3,
+        "per_seed": [
+          0.6597,
+          0.5947,
+          0.0
+        ]
+      }
+    }
+  },
+  "pegs": {
+    "denoise": {
+      "solve_rate_depth25": {
+        "mean": 0.9966,
+        "min": 0.995,
+        "max": 0.9982,
+        "n_seeds": 3,
+        "per_seed": [
+          0.995,
+          0.9966,
+          0.9982
+        ]
+      }
+    },
+    "davi": {
+      "solve_rate_depth25": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "n_seeds": 3,
+        "per_seed": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  }
+}

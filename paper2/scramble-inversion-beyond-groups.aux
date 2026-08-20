@@ -28,11 +28,11 @@
 \newlabel{fig:galB}{{4}{5}{Noising and denoising, domains 6--10: Hanoi, POMDP maze (the strip shows the agent's masked view), Lights Out, Mountain Car (reverse-time noising visible as the car being carried away from the flag), and Peg Solitaire (noising = un-jumps that add pegs; denoising = jumps that remove them)}{figure.caption.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces 24-puzzle greedy solve rate during training, by scramble depth (left: denoiser; right: DAVI, same axes and budget).}}{6}{figure.caption.5}\protected@file@percent }
 \newlabel{fig:slide24}{{5}{6}{24-puzzle greedy solve rate during training, by scramble depth (left: denoiser; right: DAVI, same axes and budget)}{figure.caption.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Left:} Sokoban solve rate vs.\ difficulty; reverse-only training is deadlock-blind. \textbf  {Right:} the pendulum ablation --- $\epsilon $-regression collapses to the bimodal posterior's mean; the same data with a 21-bin categorical head restores $100\%$.}}{6}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:soko}{{6}{6}{\textbf {Left:} Sokoban solve rate vs.\ difficulty; reverse-only training is deadlock-blind. \textbf {Right:} the pendulum ablation --- $\epsilon $-regression collapses to the bimodal posterior's mean; the same data with a 21-bin categorical head restores $100\%$}{figure.caption.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Conditioning and partial observability are not boundaries}{6}{subsection.4.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Irreversibility: the failure with a constructive fix (Sokoban, Peg Solitaire)}{6}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Continuity and non-monotonicity (pendulum, Mountain Car)}{7}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Continuity and non-monotonicity (pendulum, Mountain Car)}{6}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \textbf  {Left:} Sokoban solve rate vs.\ difficulty; reverse-only training is deadlock-blind. \textbf  {Right:} the pendulum ablation --- $\epsilon $-regression collapses to the bimodal posterior's mean; the same data with a 21-bin categorical head restores $100\%$.}}{7}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:soko}{{6}{7}{\textbf {Left:} Sokoban solve rate vs.\ difficulty; reverse-only training is deadlock-blind. \textbf {Right:} the pendulum ablation --- $\epsilon $-regression collapses to the bimodal posterior's mean; the same data with a 21-bin categorical head restores $100\%$}{figure.caption.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Commutativity (Lights Out)}{7}{subsection.4.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Stochasticity: the hard boundary (2048)}{7}{subsection.4.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5}Discussion: a practitioner's checklist}{7}{section.5}\protected@file@percent }
@@ -51,7 +51,7 @@
 \bibcite{sun2023}{{11}{2023}{{Sun and Yang}}{{}}}
 \bibcite{takano2023}{{12}{2023}{{Takano}}{{}}}
 \@writefile{toc}{\contentsline {section}{\numberline {6}Reproducibility}{8}{section.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Per-domain configuration. Optimizer Adam ($10^{-3}$, $\times 0.1$ at $80\%$), bf16 autocast throughout; DAVI target-net sync at loss $<0.05$ or staleness cap. Value baselines share every setting.}}{9}{table.caption.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {A}Hyperparameters}{9}{appendix.A}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Per-domain configuration. Optimizer Adam ($10^{-3}$, $\times 0.1$ at $80\%$), bf16 autocast throughout; DAVI target-net sync at loss $<0.05$ or staleness cap. Value baselines share every setting.}}{9}{table.caption.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {B}Validation gates}{9}{appendix.B}\protected@file@percent }
 \gdef \@abspage@last{9}

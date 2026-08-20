@@ -1,0 +1,26 @@
+{"iter": 500, "ema": 0.0073, "tgt_updates": 4}
+{"iter": 1000, "ema": 0.0039, "tgt_updates": 9}
+{"iter": 1500, "ema": 0.003, "tgt_updates": 14}
+{"iter": 2000, "ema": 0.0026, "tgt_updates": 19}
+{"iter": 2500, "ema": 0.0024, "tgt_updates": 24}
+{"iter": 3000, "ema": 0.0093, "tgt_updates": 29}
+{"iter": 3500, "ema": 0.0037, "tgt_updates": 34}
+{"iter": 4000, "ema": 0.0045, "tgt_updates": 39}
+{"iter": 4500, "ema": 0.0096, "tgt_updates": 44}
+{"iter": 5000, "ema": 0.0039, "tgt_updates": 49}
+{"iter": 5000, "probe": {"5": 0.1309, "10": 0.0, "15": 0.0, "25": 0.0}}
+{"iter": 5500, "ema": 0.005, "tgt_updates": 54}
+{"iter": 6000, "ema": 0.005, "tgt_updates": 59}
+{"iter": 6500, "ema": 0.0068, "tgt_updates": 64}
+{"iter": 7000, "ema": 0.0045, "tgt_updates": 69}
+{"iter": 7500, "ema": 0.007, "tgt_updates": 74}
+{"iter": 8000, "ema": 0.0045, "tgt_updates": 79}
+{"iter": 8500, "ema": 0.0049, "tgt_updates": 84}
+{"iter": 9000, "ema": 0.0053, "tgt_updates": 89}
+{"iter": 9500, "ema": 0.0116, "tgt_updates": 94}
+{"iter": 10000, "ema": 0.0054, "tgt_updates": 99}
+{"iter": 10000, "probe": {"5": 0.2246, "10": 0.0, "15": 0.0, "25": 0.0}}
+{"iter": 10500, "ema": 0.0058, "tgt_updates": 104}
+{"iter": 11000, "ema": 0.0058, "tgt_updates": 109}
+{"iter": 11500, "ema": 0.0056, "tgt_updates": 114}
+{"iter": 12000, "ema": 0.0057, "tgt_updates": 119}

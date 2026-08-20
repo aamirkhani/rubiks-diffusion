@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.7.20)  18 AUG 2026 22:30
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025/Debian) (preloaded format=pdflatex 2026.7.20)  20 AUG 2026 01:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -616,53 +616,50 @@ dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/share/
 texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-
 mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc} <./fig2_domains.pd
 f>]
+Overfull \hbox (23.5236pt too wide) in paragraph at lines 100--119
+ [][] 
+ []
+
 <fig2_architecture.pdf, id=149, 520.34402pt x 262.58716pt>
 File: fig2_architecture.pdf Graphic file (type pdf)
 <use fig2_architecture.pdf>
 Package pdftex.def Info: fig2_architecture.pdf  used on input line 140.
 (pdftex.def)             Requested size: 441.57086pt x 222.84753pt.
- [2]
+[2]
 <fig2_gallery_A.pdf, id=162, 447.48117pt x 546.75801pt>
 File: fig2_gallery_A.pdf Graphic file (type pdf)
 <use fig2_gallery_A.pdf>
 Package pdftex.def Info: fig2_gallery_A.pdf  used on input line 166.
 (pdftex.def)             Requested size: 460.35791pt x 562.4996pt.
-<fig2_gallery_B.pdf, id=163, 485.78783pt x 661.2975pt>
+<fig2_gallery_B.pdf, id=163, 447.48117pt x 547.59679pt>
 File: fig2_gallery_B.pdf Graphic file (type pdf)
 <use fig2_gallery_B.pdf>
 Package pdftex.def Info: fig2_gallery_B.pdf  used on input line 178.
-(pdftex.def)             Requested size: 460.35791pt x 626.68521pt.
-
-
-LaTeX Warning: Float too large for page by 40.65521pt on input line 185.
-
+(pdftex.def)             Requested size: 460.35791pt x 563.36253pt.
 <fig2_slide24.pdf, id=165, 457.16797pt x 160.26125pt>
 File: fig2_slide24.pdf Graphic file (type pdf)
 <use fig2_slide24.pdf>
 Package pdftex.def Info: fig2_slide24.pdf  used on input line 209.
 (pdftex.def)             Requested size: 422.77664pt x 148.20752pt.
-[3 <./fig2_architecture.pdf>] [4 <./fig2_gallery_A.pdf>] [5 <./fig2_gallery_B.p
-df>]
-<fig2_sokoban.pdf, id=611, 233.13097pt x 159.86601pt>
+ [3 <./fig2_architecture.pdf>] [4 <./fig2_gallery_A.pdf>] [5 <./fig2_gallery_B.
+pdf>]
+<fig2_sokoban.pdf, id=645, 233.13097pt x 159.86601pt>
 File: fig2_sokoban.pdf Graphic file (type pdf)
 <use fig2_sokoban.pdf>
 Package pdftex.def Info: fig2_sokoban.pdf  used on input line 242.
 (pdftex.def)             Requested size: 225.4804pt x 154.62097pt.
-<fig2_pendulum.pdf, id=612, 233.13097pt x 158.96442pt>
+<fig2_pendulum.pdf, id=646, 233.13097pt x 158.96442pt>
 File: fig2_pendulum.pdf Graphic file (type pdf)
 <use fig2_pendulum.pdf>
 Package pdftex.def Info: fig2_pendulum.pdf  used on input line 246.
 (pdftex.def)             Requested size: 225.4804pt x 153.74898pt.
- [6 <./fig2_slide24.pdf> <./fig2_sokoban.pdf> <./fig2_pendulum.pdf>]
+
 Overfull \hbox (8.34804pt too wide) in paragraph at lines 268--274
 \OT1/lmr/m/n/10.95 When so-lu-tions are un-ordered sets, ``the move that un-doe
 s the last noise op'' is max-i-mally ambiguous---
  []
 
-[7]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
+[6 <./fig2_slide24.pdf>] [7 <./fig2_sokoban.pdf> <./fig2_pendulum.pdf>]
 [8] [9] (./scramble-inversion-beyond-groups.aux)
  ***********
 LaTeX2e <2025-11-01>
@@ -675,11 +672,11 @@ t changed.
 Here is how much of TeX's memory you used:
  14767 strings out of 469438
  233424 string characters out of 5468410
- 694934 words of memory out of 5000000
+ 695089 words of memory out of 5000000
  43174 multiletter control sequences out of 15000+600000
  688883 words of font info for 97 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 75i,11n,79p,1001b,468s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1001b,572s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/ty
 pe1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></u
 sr/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/pu
@@ -692,11 +689,11 @@ public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/sh
 are/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public
 /lm/lmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
 
-Output written on scramble-inversion-beyond-groups.pdf (9 pages, 534101 bytes).
+Output written on scramble-inversion-beyond-groups.pdf (9 pages, 544372 bytes).
 
 PDF statistics:
- 863 PDF objects out of 1000 (max. 8388607)
- 362 compressed objects within 4 object streams
+ 897 PDF objects out of 1000 (max. 8388607)
+ 378 compressed objects within 4 object streams
  50 named destinations out of 1000 (max. 500000)
  10388 words of extra memory for PDF output out of 12000 (max. 10000000)
 

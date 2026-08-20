@@ -1,0 +1,67 @@
+{"iter": 500, "ema": 0.0099, "tgt_updates": 4}
+{"iter": 1000, "ema": 0.0031, "tgt_updates": 9}
+{"iter": 1500, "ema": 0.0026, "tgt_updates": 14}
+{"iter": 2000, "ema": 0.0026, "tgt_updates": 19}
+{"iter": 2500, "ema": 0.007, "tgt_updates": 24}
+{"iter": 3000, "ema": 0.0135, "tgt_updates": 29}
+{"iter": 3500, "ema": 0.0035, "tgt_updates": 34}
+{"iter": 4000, "ema": 0.0081, "tgt_updates": 39}
+{"iter": 4500, "ema": 0.0044, "tgt_updates": 44}
+{"iter": 5000, "ema": 0.0037, "tgt_updates": 49}
+{"iter": 5000, "probe": {"5": 0.1328, "10": 0.002, "15": 0.0, "25": 0.0}}
+{"iter": 5500, "ema": 0.0031, "tgt_updates": 54}
+{"iter": 6000, "ema": 0.0178, "tgt_updates": 59}
+{"iter": 6500, "ema": 0.0039, "tgt_updates": 64}
+{"iter": 7000, "ema": 0.0093, "tgt_updates": 69}
+{"iter": 7500, "ema": 0.0035, "tgt_updates": 74}
+{"iter": 8000, "ema": 0.003, "tgt_updates": 79}
+{"iter": 8500, "ema": 0.0035, "tgt_updates": 84}
+{"iter": 9000, "ema": 0.0027, "tgt_updates": 89}
+{"iter": 9500, "ema": 0.0022, "tgt_updates": 94}
+{"iter": 10000, "ema": 0.0033, "tgt_updates": 99}
+{"iter": 10000, "probe": {"5": 0.2305, "10": 0.0, "15": 0.0, "25": 0.0}}
+{"iter": 10500, "ema": 0.0021, "tgt_updates": 104}
+{"iter": 11000, "ema": 0.0044, "tgt_updates": 109}
+{"iter": 11500, "ema": 0.0021, "tgt_updates": 114}
+{"iter": 12000, "ema": 0.0021, "tgt_updates": 119}
+{"iter": 12500, "ema": 0.0039, "tgt_updates": 124}
+{"iter": 13000, "ema": 0.0035, "tgt_updates": 129}
+{"iter": 13500, "ema": 0.0033, "tgt_updates": 134}
+{"iter": 14000, "ema": 0.0016, "tgt_updates": 139}
+{"iter": 14500, "ema": 0.0045, "tgt_updates": 144}
+{"iter": 15000, "ema": 0.0049, "tgt_updates": 149}
+{"iter": 15000, "probe": {"5": 0.1445, "10": 0.0, "15": 0.0, "25": 0.0}}
+{"iter": 15500, "ema": 0.0046, "tgt_updates": 154}
+{"iter": 16000, "ema": 0.0053, "tgt_updates": 159}
+{"iter": 16500, "ema": 0.0045, "tgt_updates": 164}
+{"iter": 17000, "ema": 0.0032, "tgt_updates": 169}
+{"iter": 17500, "ema": 0.0026, "tgt_updates": 174}
+{"iter": 18000, "ema": 0.0024, "tgt_updates": 179}
+{"iter": 18500, "ema": 0.0022, "tgt_updates": 184}
+{"iter": 19000, "ema": 0.0019, "tgt_updates": 189}
+{"iter": 19500, "ema": 0.0044, "tgt_updates": 194}
+{"iter": 20000, "ema": 0.0021, "tgt_updates": 199}
+{"iter": 20000, "probe": {"5": 0.2539, "10": 0.0, "15": 0.0, "25": 0.0}}
+{"iter": 20500, "ema": 0.0017, "tgt_updates": 204}
+{"iter": 20500, "ema": 0.0027, "tgt_updates": 5}
+{"iter": 21000, "ema": 0.0022, "tgt_updates": 10}
+{"iter": 21500, "ema": 0.0023, "tgt_updates": 15}
+{"iter": 22000, "ema": 0.0024, "tgt_updates": 20}
+{"iter": 22500, "ema": 0.0034, "tgt_updates": 25}
+{"iter": 23000, "ema": 0.003, "tgt_updates": 30}
+{"iter": 23500, "ema": 0.0036, "tgt_updates": 35}
+{"iter": 24000, "ema": 0.0026, "tgt_updates": 40}
+{"iter": 24500, "ema": 0.002, "tgt_updates": 45}
+{"iter": 25000, "ema": 0.0021, "tgt_updates": 50}
+{"iter": 25000, "probe": {"5": 0.4141, "10": 0.0078, "15": 0.0, "25": 0.0}}
+{"iter": 25500, "ema": 0.0021, "tgt_updates": 55}
+{"iter": 26000, "ema": 0.0022, "tgt_updates": 60}
+{"iter": 26500, "ema": 0.0021, "tgt_updates": 65}
+{"iter": 27000, "ema": 0.0023, "tgt_updates": 70}
+{"iter": 27500, "ema": 0.0022, "tgt_updates": 75}
+{"iter": 28000, "ema": 0.0021, "tgt_updates": 80}
+{"iter": 28500, "ema": 0.002, "tgt_updates": 85}
+{"iter": 29000, "ema": 0.0021, "tgt_updates": 90}
+{"iter": 29500, "ema": 0.0021, "tgt_updates": 95}
+{"iter": 30000, "ema": 0.0019, "tgt_updates": 100}
+{"iter": 30000, "probe": {"5": 0.377, "10": 0.0078, "15": 0.0, "25": 0.0}}
