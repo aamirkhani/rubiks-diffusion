@@ -15,8 +15,8 @@
 \newcommand{\cond}{\textcolor{orange!85!black}{$\triangle$}}
 \input{numbers.tex}
 
-\title{Scramble Inversion Beyond Groups:\\
-A Ten-Domain Map of Where Denoising Diffusion\\ Solves Sequential Decision Problems}
+\title{When Is an RL Problem a Diffusion Problem?\\
+A Ten-Domain Empirical Map}
 
 \author{Aamer Khani\thanks{Experiments, implementation, and manuscript
 preparation were carried out with the assistance of Claude (Anthropic).
@@ -75,11 +75,30 @@ checklist and release all ten environments, trainers, and logs.
 
 \section{Introduction}
 
-The companion study~\citep{khani2026} formalized cube solving as discrete
+The companion study~\citep{khani2026}, which shares an author with the
+present paper, formalized cube solving as discrete
 denoising diffusion on a Cayley graph: random moves are the noise, scramble
 depth is the timestep, and a categorical denoiser trained to invert the last
 scramble move solves fully scrambled cubes by reverse-process rollout,
-matching DAVI~\citep{agostinelli2019} at $2.8\times$ less wall-clock. That
+matching DAVI~\citep{agostinelli2019} at $2.8\times$ less wall-clock.
+Figure~\ref{fig:refcube} places that formulation in its lineage: the same
+$t{=}0{\to}1$ schedule that diffuses a particle cloud off a
+spiral~\citep{sohldickstein2015} and dissolves a photograph under Gaussian
+noise~\citep{ho2020} scrambles a cube under random moves---three noise
+operators, one recipe.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{fig_ref_cube.pdf}
+\caption{The reference processes, kept separate from the ten study domains.
+One shared schedule $t{=}0{\to}1$: particle diffusion off a spiral
+(top, \citealp{sohldickstein2015}), image diffusion (middle,
+\citealp{ho2020}), and the Rubik's Cube noising walk of the companion
+paper~\citep{khani2026} (bottom; real engine states, scramble depth
+$= \lfloor 30t \rceil$). Every domain figure in this paper is this same
+picture with the noise operator swapped.}
+\label{fig:refcube}
+\end{figure} That
 result invites the strong hypothesis, posed by the first author: \emph{every
 reinforcement-learning problem can be recast as diffusion, and may train
 faster}. This paper maps the hypothesis's actual extent.
@@ -103,7 +122,7 @@ sequence is re-executed in the environment.
 
 \begin{table}[t]
 \centering
-\small
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{clllc}
 \toprule
 \# & Domain & Removes & Outcome (greedy, matched) & Verdict \\
@@ -119,7 +138,7 @@ sequence is re-executed in the environment.
 9 & Mountain Car & monotone progress & $\mcDN$ vs $\mcVAL$ & \yes \\
 10 & Peg Solitaire & conservation & $\pegDN$ vs $\pegDV$ & \cond \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{The assumption ladder. \yes{} = scramble inversion is doable and
 competitive or dominant; \cond{} = doable with a specific, identified
 adaptation (hybrid value veto; distributional head); \no{} = fails for a
@@ -128,6 +147,48 @@ mean over three independent training seeds with min--max range; single
 percentages are single-seed or exhaustive evaluations.}
 \label{tab:ladder}
 \end{table}
+
+\section{Background: scramble inversion on the Rubik's Cube}
+\label{sec:background}
+
+This paper is self-contained; this section compresses everything a reader
+needs from the companion cube study~\citep{khani2026}.
+
+\textbf{Formulation.} The cube's configuration is a discrete state $s$; the
+twelve quarter-turns are actions on it. Image diffusion corrupts a photo
+with Gaussian increments and learns the reverse conditional; scramble
+inversion corrupts the \emph{solved} cube with a walk of uniformly random
+moves and learns the reverse conditional there: given a state produced by a
+$k$-move scramble, predict the inverse of the move applied last. Scramble
+depth plays the role of the timestep $t$ (drawn uniformly, a linear
+schedule), and the categorical cross-entropy on the undo-move is the exact
+discrete analogue of $\epsilon$-prediction: both regress the noise increment
+that produced the current state (Figure~\ref{fig:refcube}). The objective
+itself appears outside the diffusion frame in \citet{takano2023}; the
+companion paper's contribution is the diffusion formulation, its schedule
+analysis, and a matched-compute comparison. Solving is reverse-process
+rollout: repeatedly apply the predicted undo-move until the goal appears
+(optionally widened into a beam search).
+
+\textbf{Results carried into this paper.} On the 2$\times$2$\times$2 cube
+(3{,}674{,}160 states, exhaustively enumerable), the trained denoiser solves
+$100\%$ of \emph{all} states---checked against an exact breadth-first-search
+oracle, with greedy rollout alone at $99.989\%$. On the 3$\times$3$\times$3
+($4.3\times10^{19}$ states), it solves $1000/1000$ cubes scrambled with 100
+random moves. The efficiency gap is the motivation for everything that
+follows: the denoiser trains at $28.7$ iterations/s versus DAVI's $5.8$ on
+identical hardware---each DAVI update must expand and evaluate all twelve
+successors of every sample to form its bootstrap target
+$1+\min_a V(s')$, while the denoiser needs one forward pass on a directly
+supervised label---reaching its solve rate in $4.9$\,h versus $13.9$\,h
+($2.8\times$), and dominating at every beam width tested. DAVI keeps one
+edge: shorter solutions ($23.0$ vs.\ $29.9$ moves on average), the classic
+trade of solution quality for training cost. Ablations showed the recipe is
+robust on the cube: schedule shape barely matters ($\geq 99.96\%$ across all
+tested), and timestep conditioning is optional. The cube, however, is a
+Cayley graph of a group---homogeneous, invertible, deterministic, fully
+observed---and every one of those properties is an assumption the rest of
+this paper deletes.
 
 \section{The recipe, its baseline, and one architecture}
 \label{sec:recipe}

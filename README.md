@@ -168,12 +168,14 @@ states and the trained model — no manual animation.
 
 ---
 
-# Paper 2: Scramble Inversion Beyond Groups (10-domain study)
+# Paper 2: When Is an RL Problem a Diffusion Problem? (10-domain study)
 
 Does "every RL problem can be diffusion" hold? Ten domains, each deleting one
 property the cube provides — with a matched value baseline, exact oracles,
-and replay verification everywhere. Draft:
-[`paper2/scramble-inversion-beyond-groups.pdf`](paper2/scramble-inversion-beyond-groups.pdf)
+and replay verification everywhere. Latest version:
+[`paper2/when-is-rl-a-diffusion-problem_r4.pdf`](paper2/when-is-rl-a-diffusion-problem_r4.pdf)
+(earlier versions preserved: `scramble-inversion-beyond-groups.pdf` = r1,
+`_r2`, and `when-is-rl-a-diffusion-problem_r3.pdf`)
 
 **Noising and denoising, watched in every domain** (top strips: the goal
 dissolving under the forward schedule; bottom strips: the trained denoiser's
