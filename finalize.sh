@@ -10,8 +10,15 @@ $PY -c "import sys; sys.path.insert(0,'paper2'); import figures2 as f; f.fig_sum
 $PY paper2/fig_process_gallery.py
 cp paper2/fig2_gallery_A.png paper2/fig2_gallery_B.png paper2/fig2_architecture.png paper2/png/ 2>/dev/null || true
 cd paper2
-pdflatex -interaction=nonstopmode -jobname=scramble-inversion-beyond-groups main.tex >/dev/null 2>&1
-pdflatex -interaction=nonstopmode -jobname=scramble-inversion-beyond-groups main.tex 2>&1 | grep -E "^!|Output written" | head -3
+# never overwrite an existing final PDF: compile to the next free _rN suffix
+JOB=scramble-inversion-beyond-groups
+if [ -f "${JOB}.pdf" ]; then
+  N=2
+  while [ -f "${JOB}_r${N}.pdf" ]; do N=$((N+1)); done
+  JOB="${JOB}_r${N}"
+fi
+pdflatex -interaction=nonstopmode -jobname="$JOB" main.tex >/dev/null 2>&1
+pdflatex -interaction=nonstopmode -jobname="$JOB" main.tex 2>&1 | grep -E "^!|Output written" | head -3
 cd ..
 git add -A
 git commit -m "Finalize paper 2: aggregated seeds, final numbers, complete galleries

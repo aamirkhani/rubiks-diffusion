@@ -22,7 +22,7 @@ from model import PolicyNet
 VOCAB = 12  # exponents 0..11 (up to 2048 tile)
 
 
-def train(iters, out_dir, K=40, batch=8192, lr=1e-3, device="cuda"):
+def train(iters, out_dir, K=40, batch=8192, lr=1e-3, device="cuda", spawn_aware=False):
     os.makedirs(out_dir, exist_ok=True)
     net = PolicyNet(S, 4, 2048, 1024, 3, vocab=VOCAB).to(device)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
@@ -36,7 +36,7 @@ def train(iters, out_dir, K=40, batch=8192, lr=1e-3, device="cuda"):
 
     def refill():
         nonlocal pool, pool_ptr
-        boards, labels = noising_batch(batch * POOL, K, device=device)
+        boards, labels = noising_batch(batch * POOL, K, device=device, spawn_aware=spawn_aware)
         pool, pool_ptr = (boards, labels), 0
 
     ema = None
@@ -129,6 +129,7 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int)
     ap.add_argument("--out")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--spawn-aware", action="store_true")
     ap.add_argument("--eval", action="store_true")
     ap.add_argument("--ckpt")
     args = ap.parse_args()
@@ -146,4 +147,4 @@ if __name__ == "__main__":
             json.dump(res_out, f, indent=2)
         print("saved paper2_data/domain5_2048.json")
     else:
-        train(args.iters, args.out)
+        train(args.iters, args.out, spawn_aware=args.spawn_aware)

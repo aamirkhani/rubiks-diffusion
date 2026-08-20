@@ -157,10 +157,13 @@ def unspawn(board, generator=None):
     return out, has
 
 
-def noising_batch(B, K, target_exp=8, device="cuda", generator=None):
+def noising_batch(B, K, target_exp=8, device="cuda", generator=None,
+                  spawn_aware=False):
     """Reverse play from a constructed target board (one 2^target tile).
     Returns (boards, labels) where label = direction whose forward slide
-    undoes the last un-slide."""
+    undoes the last un-slide. With spawn_aware=True, forward spawns are
+    injected during the reverse walk so the training marginal contains the
+    spawn debris that real stochastic play produces."""
     board = torch.zeros(B, S, dtype=torch.int8, device=device)
     pos = torch.randint(S, (B,), device=device, generator=generator)
     rows = torch.arange(B, device=device)
@@ -175,6 +178,11 @@ def noising_batch(B, K, target_exp=8, device="cuda", generator=None):
         do_unspawn = torch.rand(B, device=device, generator=generator) < 0.25
         ub, uh = unspawn(nb, generator=generator)
         nb = torch.where((do_unspawn & uh).unsqueeze(1), ub, nb)
+        if spawn_aware:
+            # inject real forward spawns so states carry play-like debris
+            do_sp = torch.rand(B, device=device, generator=generator) < 0.5
+            sp = spawn(nb, generator=generator)
+            nb = torch.where(do_sp.unsqueeze(1), sp, nb)
         take = active & did
         board = torch.where(take.unsqueeze(1), nb, board)
         # forward slide that undoes un-slide toward d is the OPPOSITE slide

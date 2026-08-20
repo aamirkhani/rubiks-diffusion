@@ -67,7 +67,9 @@ near-perfect inside the covered shells and zero beyond---the schedule, not
 the learner, is the ceiling. Finally there is one hard boundary: stochastic
 dynamics (2048), where the
 deterministic reverse process describes a game that is never played and the
-denoiser performs at random-play level. We conclude with a practitioner's
+denoiser performs at random-play level---and a spawn-aware noising walk that
+matches the state marginal does not help, because the undo-labels themselves
+answer the wrong question. We conclude with a practitioner's
 checklist and release all ten environments, trainers, and logs.
 \end{abstract}
 
@@ -121,7 +123,9 @@ sequence is re-executed in the environment.
 \caption{The assumption ladder. \yes{} = scramble inversion is doable and
 competitive or dominant; \cond{} = doable with a specific, identified
 adaptation (hybrid value veto; distributional head); \no{} = fails for a
-structural reason. Ranges in the text are min--max over 3 seeds.}
+structural reason. Throughout the paper, $a\%\,(b$--$c)$ denotes the
+mean over three independent training seeds with min--max range; single
+percentages are single-seed or exhaustive evaluations.}
 \label{tab:ladder}
 \end{table}
 
@@ -133,7 +137,13 @@ transition kernel (the inverse moves themselves when actions are invertible;
 pulls, un-jumps, un-slides, or reverse-time integration otherwise), with
 depth $t \sim \mathrm{Unif}\{1..K\}$; train $p_\theta(a \mid s)$ by
 cross-entropy to predict the forward action that undoes the last noise op;
-act by greedy rollout (beam search optional). \textbf{Baseline.} DAVI: a
+act by greedy rollout (beam search optional). Throughout, \emph{shell
+coverage} denotes the training distribution the walk induces over \emph{true}
+distances-to-goal: because walks backtrack, deep distance shells are
+systematically under-visited relative to their share of the state space, and
+the learned policy can only be as good as the shells its data actually
+reaches (quantified exactly in the companion paper; taken to its extreme by
+Hanoi below). \textbf{Baseline.} DAVI: a
 cost-to-go net trained by one-step bootstrapped targets over the
 \emph{forward} dynamics, acting by 1-step lookahead---identical backbone,
 differing only in head and loss. \textbf{Architecture}
@@ -154,7 +164,13 @@ the trained Sokoban policy.}
 \section{Watching noising and denoising in every domain}
 \label{sec:gallery}
 
-Figures~\ref{fig:galA} and~\ref{fig:galB} are the study in pictures. For
+Figures~\ref{fig:galA} and~\ref{fig:galB} are the study in pictures. To
+anchor the unfamiliar in the familiar, the top two rows of each figure show
+the \emph{same} $t{=}0{\to}1$ schedule applied to the two classic diffusion
+settings every reader already knows: a particle cloud diffusing off a
+spiral~\citep{sohldickstein2015} and a photograph dissolving under Gaussian
+noise~\citep{ho2020}. Every domain row below is that same picture with the
+Gaussian replaced by the domain's noise operator. For
 each domain the top strip runs the \emph{forward schedule}: the goal state
 at $t{=}0$ progressively destroyed by the domain's noise operator---random
 slides, reverse-time torques, pulls, un-jumps, presses---through every
@@ -169,7 +185,11 @@ unmergeable debris.
 \begin{figure}[p]
 \centering
 \includegraphics[width=0.98\linewidth]{fig2_gallery_A.pdf}
-\caption{Noising and denoising, domains 1--5. Top strip of each pair: the
+\caption{Noising and denoising, domains 1--5. The two reference rows at the
+top show the same $t$ grid on the classic diffusion visuals---a spiral
+particle cloud and a photograph under Gaussian noise---so each domain strip
+below reads as the same schedule with a different noise operator. Top strip
+of each pair: the
 forward (noising) schedule from the goal, with intermediate states at the
 labeled $t$. Bottom strip: the trained denoiser's actual greedy trajectory
 from a fresh fully-noised state back to the goal (replay-verified; Sokoban
@@ -181,7 +201,10 @@ domain, not of the run.}
 \begin{figure}[p]
 \centering
 \includegraphics[width=0.98\linewidth]{fig2_gallery_B.pdf}
-\caption{Noising and denoising, domains 6--10: Hanoi, POMDP maze (the strip
+\caption{Noising and denoising, domains 6--10 (reference rows as in
+Fig.~\ref{fig:galA}): Hanoi (the denoising row shows the trained denoiser
+wandering and failing from the classic all-on-one-peg start---the
+schedule-coverage boundary of \S\ref{sec:hanoi} made visible), POMDP maze (the strip
 shows the agent's masked view), Lights Out, Mountain Car (reverse-time
 noising visible as the car being carried away from the flag), and Peg
 Solitaire (noising = un-jumps that add pegs; denoising = jumps that remove
@@ -193,6 +216,7 @@ them).}
 \label{sec:results}
 
 \subsection{Scale is the denoiser's regime (24-puzzle, 8-puzzle, Hanoi)}
+\label{sec:hanoi}
 On the 24-puzzle the denoiser reaches $100\%$ greedy on every probe depth by
 60k iterations and solves 500/500 thousand-move scrambles
 ($\slideDNgreedy$ with no search); DAVI at matched iterations solves
@@ -214,8 +238,13 @@ resolves the picture: the denoiser solves $100\%$ of states within distance
 50 and $96\%$ within 51--100---precisely the covered shells---and $0\%$
 beyond 200. Neither horizon nor the objective is the boundary; \emph{schedule
 coverage} is, taken to the extreme predicted by the shell-coverage analysis
-of the companion paper. Any fix must repair the forward process (e.g.,
-trajectory stratification or explicit deep-state seeding), not the learner.
+of the companion paper. We also tested the natural repair: \emph{mixing} (backtrack-allowed)
+walks of length 1200, 5000, and 20{,}000 reach mean true distance only 22,
+42, and 77 (max 79, 137, 278)---coverage grows diffusively, roughly as
+$\sqrt{K}$, against a diameter of 1023, so no feasible walk depth covers
+this geometry. The boundary is structural for walk-based noising; a fix must
+replace the forward process itself (explicit deep-state seeding, or noising
+kernels with super-diffusive mixing), not tune it.
 
 \begin{figure}[t]
 \centering
@@ -244,7 +273,10 @@ $\arg\max_a [\log p_\theta(a\mid s) - \lambda V(s_a')]$---the denoiser
 proposes a direction, the value net (which bootstraps through forward
 dynamics and therefore knows dead states) vetoes it. With $\lambda$ chosen
 on a held-out split, the hybrid solves $\sokoHY$ at depth 60,
-\emph{surpassing both parents}. Peg Solitaire, whose jumps destroy a peg
+\emph{surpassing both parents}. The choice is robust: validation solve rate
+is monotone in $\lambda$ over $[0.1, 2]$ ($79.4\%$, $86.8\%$, $94.5\%$,
+$95.5\%$, $97.2\%$ at $\lambda = 0.1, 0.25, 0.5, 1, 2$), so any
+$\lambda \gtrsim 0.5$ recovers most of the benefit. Peg Solitaire, whose jumps destroy a peg
 each move (nothing is conserved and deadlocks abound), replays the pattern
 at rung ten: denoiser alone \pegDN{}, DAVI \pegDV{} (depth-25 instances).
 
@@ -291,9 +323,20 @@ level in the real game ($\gDN$ vs.\ random's $\gRAND$ reaching the 256
 tile), while a one-line greedy-merge heuristic reaches $\gHEUR$. The
 mechanism is structural: with exogenous randomness, the reverse process's
 marginal corresponds to no realizable policy's state distribution, and its
-undo-labels answer questions the forward game never asks. Repairing this
-demands a fundamentally different reverse process (marginalizing over spawn
-randomness), not a tweak.
+undo-labels answer questions the forward game never asks. We tested the
+obvious partial repair: a \emph{spawn-aware} noising walk that injects real
+forward spawns (probability $0.5$ per step) during reverse play, so the
+training marginal contains the spawn debris that stochastic play produces.
+It does not help: after 40k iterations the spawn-aware denoiser reaches the
+256 tile in $6.2\%$ of games versus random play's $7.1\%$ (mean max-tile
+$103$ vs.\ $106$; greedy-merge $238$). Fixing the marginal is not enough,
+because the labels remain wrong: each undo-label answers ``what deterministic
+slide produced this board,'' whereas acting well in the real game requires
+an expectation over spawn randomness. Repairing this demands a
+fundamentally different reverse process (marginalizing over spawns in the
+label distribution, i.e.\ learning $\mathbb{E}_{\text{spawn}}$-aware
+targets), not a data tweak---evidence that the boundary is structural rather
+than an artifact of the training set.
 
 \section{Discussion: a practitioner's checklist}
 \label{sec:discussion}

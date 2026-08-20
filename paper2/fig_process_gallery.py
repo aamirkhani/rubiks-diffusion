@@ -294,18 +294,76 @@ def rev_sequences():
     return out
 
 
+def reference_rows():
+    """Familiar diffusion anchors: spiral particles + a real photo, noised on
+    the same t grid — shown atop every gallery so each domain's strip reads
+    as 'the same schedule, a different state space'."""
+    rng = np.random.default_rng(3)
+    sp = rng.uniform(0, 1, 1200)
+    ang = 4 * np.pi * sp + 0.4
+    r = 0.15 + 0.75 * sp
+    x0 = np.stack([r * np.cos(ang), r * np.sin(ang)], 1)
+    x0 += rng.normal(0, 0.02, x0.shape)
+    eps = rng.standard_normal(x0.shape)
+    spiral_frames, img_frames = [], []
+    try:
+        from skimage.data import astronaut
+        from skimage.transform import resize
+        img0 = resize(astronaut(), (160, 160), anti_aliasing=True).astype(np.float32)
+    except Exception:
+        img0 = np.ones((160, 160, 3), dtype=np.float32) * 0.5
+    rngI = np.random.default_rng(0)
+    epsI = rngI.standard_normal(img0.shape)
+    for k in range(NCOL):
+        t = k / (NCOL - 1)
+        # quadratic noise growth: early frames stay recognizable, matching
+        # the gradual corruption of the domain rows below
+        sig = 0.55 * t ** 2
+        shrink = 1.0 - 0.55 * t ** 2
+        spiral_frames.append(shrink * x0 + sig * eps)
+        sigI = 1.0 * t ** 2
+        img_frames.append(np.clip(np.sqrt(max(1 - sigI ** 2, 1e-4)) * img0 +
+                                  sigI * epsI, 0, 1))
+    return spiral_frames, img_frames
+
+
+def rspiral(ax, pts):
+    ax.scatter(pts[:, 0], pts[:, 1], s=0.9, c=BLUE, alpha=0.7, linewidths=0)
+    ax.set_xlim(-1.8, 1.8); ax.set_ylim(-1.8, 1.8)
+    ax.set_aspect("equal"); ax.axis("off")
+
+
+def rimg(ax, arr):
+    ax.imshow(arr)
+    ax.set_xticks([]); ax.set_yticks([])
+
+
 ORDER_A = ["slide", "maze", "soko", "pend", "g2048"]
 ORDER_B = ["hanoi", "pomdp", "lo", "mc", "pegs"]
 
 
 def build(name, order, fwd, rev):
-    rows = []
+    rows = [("__ref_spiral", "ref", None), ("__ref_img", "ref", None)]
     for k in order:
         rows.append((k, "fwd", fwd[k]))
         rows.append((k, "rev", rev.get(k)))
     R = len(rows)
+    spiral_frames, img_frames = reference_rows()
     fig, axes = plt.subplots(R, NCOL, figsize=(7.0, 0.92 * R))
     for r, (k, kind, payload) in enumerate(rows):
+        if kind == "ref":
+            frames = spiral_frames if k == "__ref_spiral" else img_frames
+            rend0 = rspiral if k == "__ref_spiral" else rimg
+            for c in range(NCOL):
+                rend0(axes[r, c], frames[c])
+                if r == 0:
+                    axes[r, c].set_title(f"$t={c/(NCOL-1):.2f}$", fontsize=7)
+            lab = ("particles (ref.)" if k == "__ref_spiral"
+                   else "image (ref.)")
+            axes[r, 0].text(-0.24, 0.5, lab, rotation=90, fontsize=5.8,
+                            color="#6b6a66", transform=axes[r, 0].transAxes,
+                            va="center", ha="center")
+            continue
         rend = fwd[k][1]
         if kind == "fwd":
             frames, _, title = payload
@@ -315,8 +373,6 @@ def build(name, order, fwd, rev):
                     rend(ax, frames[c])
                 else:
                     ax.axis("off")
-                if r == 0:
-                    ax.set_title(f"$t={c/(NCOL-1):.2f}$", fontsize=7)
             axes[r, 0].text(-0.30, 0.5, title, rotation=90, fontsize=7,
                             transform=axes[r, 0].transAxes, va="center",
                             ha="center")

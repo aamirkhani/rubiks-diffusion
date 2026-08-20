@@ -1,8 +1,34 @@
 {
-  "1-50": 1.0,
-  "51-100": 0.9628,
-  "101-200": 0.0112,
-  "201-400": 0.0,
-  "401-700": 0.0,
-  "701-1023": 0.0
+  "solve_rate_by_true_distance": {
+    "1-50": 1.0,
+    "51-100": 0.9628,
+    "101-200": 0.0112,
+    "201-400": 0.0,
+    "401-700": 0.0,
+    "701-1023": 0.0
+  },
+  "schedule_coverage": {
+    "no_backtrack_K1200": {
+      "mean": 36,
+      "p95": 70,
+      "max": 125
+    },
+    "backtrack_allowed_K1200": {
+      "mean": 22,
+      "p95": 47,
+      "max": 79
+    },
+    "backtrack_allowed_K5000": {
+      "mean": 42,
+      "p95": 87,
+      "max": 137
+    },
+    "backtrack_allowed_K20000": {
+      "mean": 77,
+      "p95": 155,
+      "max": 278
+    },
+    "diameter": 1023,
+    "finding": "coverage grows diffusively (~sqrt K); walk-based noising cannot cover this geometry at feasible depth \u2014 the schedule boundary is structural, not a tuning failure"
+  }
 }

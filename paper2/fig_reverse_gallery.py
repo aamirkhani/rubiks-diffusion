@@ -230,16 +230,18 @@ def traj_hanoi():
     # the classic start: all disks on peg 0, exactly 1023 from the goal
     st = torch.zeros(1, cfg["n"], dtype=torch.int8, device=DEV)
     solved, actions = rollout(env, net, "denoise", st, 2500)
-    if not solved[0]:
-        return None
-    assert verify(env, st, actions)[0]
     moves = [int(a) for a in actions[0].tolist() if a >= 0]
     states, s = [st[0].cpu().numpy()], st.clone()
-    for mv in moves:
+    for mv in moves[:2500]:
         s = env.step(s, torch.tensor([mv], device=DEV))
         states.append(s[0].cpu().numpy())
-    return [states[i] for i in snap_idx(len(moves))], True, \
-        f"Hanoi — classic start solved in {len(moves)} moves (optimal 1023)"
+    if solved[0]:
+        assert verify(env, st, actions)[0]
+        cap = f"Hanoi — classic start solved in {len(moves)} moves (optimal 1023)"
+    else:
+        cap = ("Hanoi — denoiser wanders and fails from the classic start "
+               "(schedule-coverage boundary)")
+    return [states[i] for i in snap_idx(len(states) - 1)], bool(solved[0]), cap
 
 
 def traj_pomdp():
